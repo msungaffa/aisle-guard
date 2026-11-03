@@ -5,7 +5,7 @@ firmware/libraries/*_inferencing의 헤더에서 꺼내 PC(LiteRT)로 돌리고,
 - obstacle 박스 하나는 FOMO 칸(8px) 중 박스 안 칸의 obstacle 점수가 --thr(0.5) 이상이면 찾은 것
 - 오검출: obstacle 라벨이 없는 프레임에서 통로 다각형 안에 obstacle 칸이 나오면 1
 - 재현율이 --min-recall(0.9) 미만이면 종료 코드 1
-- --testset tests/model_gate_cam: 카메라 모드 보드 화면(screen.py 6·7회차, tools/cam_label.py 라벨) 53장
+- --testset tests/model_gate_cam: 카메라 모드 보드 화면(screen.py 6·7회차 + 녹화 2·3회차, tools/cam_label.py 라벨) 92장
 
 사용: python tools/model_gate.py                 # 검사
       python tools/model_gate.py --make-testset  # tools/frames/testing 라벨로 시험 세트 만들기 (videos/ 필요)
