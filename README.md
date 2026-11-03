@@ -5,6 +5,7 @@
 통로에 물건(상자·가방)이 **10초 넘게** 놓여 있으면 ESP32가 LED로 경고하고, 이벤트를 Supabase에 기록한다.
 사람은 장애물로 세지 않는다. 모델은 **보드 안에서만** 돈다.
 
+- 시연 영상(화면 녹화 + 보드 LED): https://drive.google.com/drive/folders/1TtTFRWSyQ2YmmioA1i7F11gPm9t_DfCU
 - PRD: https://claude.ai/artifact/7vguen5tdMA9Pb4VUPn3XW
 - 대시보드(DB 이벤트): https://claude.ai/artifact/Y96SJDB35Cw7M9EcPwVKvg
 
