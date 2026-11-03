@@ -33,14 +33,15 @@
 - 15:23: 모델 `ei1155430-d2`(보드 카메라 화면 369장 추가 재학습, 검증 F1 0.87, arena 320000). PC: 카메라 시험 59/59, USB 27/27·오검출 0/18, simulate 방치 +0.0초. 보드 재확인은 ②.
 
 ## 남은 일
+**제출 완료.** 아래 미완료는 모두 제출 후 선택 작업.
 - [x] ② d2 보드 재확인(15:33): USB 시나리오 1 dwell 오차 0.0초 ×10, 시연 PASS, 카메라 모드 conf 0.6으로 PASS, 추론 157~163ms. SNTP·업로드 경합 재부팅 수정. → README 검증 절에 d2 결과 추가함(③ 16:05)
 - [x] ② 최종 시연 녹화(15:41, d2 카메라 모드) verify PASS, 로그 `tools/logs/final_record.log`
 - [x] ③ security-review(취약점 없음), code-review(15:50, 지적은 아래 "제출 후")
 - [x] Supabase 시험 행 `setup-test`(id 1) 삭제(15:45, 사용자)
 - [x] ③ 16:05 대시보드 DB 다시 받음(367행: 경고 52·해제 36·heartbeat 279). README 검증 표·PRD 검증 계획 결과 칸에 d2 보드 결과 반영
-- [ ] 제출 전 사용자 확인: **GitHub 저장소가 PRIVATE** → 공개로 바꾸거나 평가자 초대. 마지막 CI 초록 확인, 시연 영상 파일 확인
+- [x] 제출 전 점검: 저장소 PUBLIC 전환(16:27), 시연 영상 공개 링크(Drive 파일) README 상단, CI 초록(16:25 완료 run)
 - [x] `docs/index.html` → https://msungaffa.github.io/aisle-guard/ : physical-ai 사이트와 같은 디자인으로 PRD·아키텍처·검증을 담은 소개 페이지
-- [ ] 제출 (16:30, 사용자)
+- [x] 제출 (2026-11-03 16:30 전, 사용자). `camera_demo.bat` 더블클릭으로 카메라 모드 시연 실행
 - [ ] 제출 후(선택): 코드 리뷰 지적 고치기 — 상세는 `docs/HISTORY.md` "③ 코드 리뷰 (medium, 15:50)". heartbeat가 경고 큐를 밀어냄, `#AISLE`·`#CAM on`·`#CONF` 때 경고 중이면 cleared 누락, NTP 재시도 없음, 재전송 중복 행, 해제 때 시간 창 안 비움, `logic_max_conf`, `model_gate.py --thr`를 0.6으로(①). 고칠 때는 단위시험 먼저.
 - [ ] 제출 후: EI 옛 프로젝트 `aisle-guard`(1155404) 지우기(선택), 보드에 PPE 펌웨어 다시 올리기
 

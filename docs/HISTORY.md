@@ -168,3 +168,10 @@
 ## 2026-11-03 docs/index.html (16:30)
 - 아키텍처 아티팩트(https://claude.ai/artifact/LAxHS5yaK8CkYDbmRxHe5m)와 README의 과제 조건·판정 로직·LED·모델·검증·정확도 과정·실행을 한 HTML로 묶어 `docs/index.html`에 둠. 외부 의존은 Google Fonts뿐, 다크 모드·폰 폭 대응. README 상단에 링크.
 - 이후 사용자 요청으로 physical-ai 사이트(https://msungaffa.github.io/physical-ai/)와 같은 디자인 체계(Pretendard, 같은 색 토큰·섹션 구성)의 소개 페이지로 다시 씀: 히어로 콘솔, 지표 띠, 배경·작동 방식·경고 단계(15초 방치 타임라인 SVG)·아키텍처·하드웨어·판정 로직·모델(d1↔d2)·DB·CI·범위·검증·개선 과정·시연. GitHub Pages(main /docs, `.nojekyll`)로 공개.
+
+## 2026-11-03 ② 제출 전 마무리·제출 (16:00~16:30)
+- 대시보드 DB 재수신은 ③이 16:02에 먼저 끝내 ②의 중복 업로드는 지움.
+- `camera_demo.bat`: `screen.py COM10 videos/demo.mp4 --mirror "1 0"`를 더블클릭으로 실행(로그 `tools/logs/screen_last.log`, 오류 시 pause). 실행해 보드 연결 확인.
+- README: LED 경고 절(`led_loop`, 단계별 1Hz/5Hz, GPIO21 LOW 켜짐, 15초 예시), 시연 영상 링크, 존댓말·명사형 문체로 바꿈, "전체 구현 아키텍처" 절(그림 + 층별 표) 추가.
+- 시연 영상: 처음 준 Drive 폴더 링크는 로그인 필요(302) → 공개 파일 링크로 교체(200 확인).
+- 저장소 PRIVATE → PUBLIC(16:27, 사용자). CI: 16:25까지 완료 run 모두 success, 이후 README 커밋 run은 제출 뒤 끝남. 사용자 제출 완료.
