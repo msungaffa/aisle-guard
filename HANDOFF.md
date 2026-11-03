@@ -9,11 +9,13 @@
 
 ## 구조
 - 저장소: `C:\dev\aisle-guard` → `github.com/msungaffa/aisle-guard` (비공개)
-- `firmware/aisle_cam/` 본 펌웨어. PPE(`C:\dev\ppe-edge-guard/firmware/ppe_cam`)에서 가져온 `camera.*`, `net.*`, `detector_ei.cpp`, `proto.*`, `secrets.example.h` (아직 이 프로젝트용으로 고치기 전)
-- `firmware/capture_cam/` 보드 카메라 사진 수집 스케치(시리얼 `p` → `JPG <hex>`). 영상 방식으로 바꿔서 지금은 예비용
-- `firmware/build.ps1` 컴파일·업로드(`-Name`으로 스케치 선택), `firmware/tests/run_tests.ps1` 호스트 g++ 단위시험 (둘 다 PPE에서 가져옴)
-- `tools/capture.py` 보드 사진 수집(가운데 240×240 자름)
-- 예정: `firmware/aisle_cam/logic.*`(판정), `tools/feed.py`(영상 프레임을 시리얼로 보냄), `db/schema.sql`, `.github/workflows/ci.yml`, `videos/`(gitignore)
+- `firmware/aisle_cam/` 본 펌웨어: `aisle_cam.ino`(시리얼 프레임 → 검출 → 판정 → LED → 이벤트), `logic.*`(판정·이벤트 JSON·20건 큐, Arduino 무관), `proto.*`(응답 분류·`AGFR` 프레임 파서), `detector_ei.cpp`/`detector_stub.cpp`(`settings.h`의 `DETECTOR_EI`로 선택), `uploader.*`(코어 0 태스크, Supabase REST, 내장 CA 번들), `net.*`(PPE Wi-Fi 재연결 수정판)
+- 비밀값: `firmware/aisle_cam/secrets.h`(Wi-Fi, Supabase URL·publishable 키), 루트 `.env`(EI_API_KEY 업로드 전용, EI_PROJECT_ID, SUPABASE_*). 둘 다 gitignore
+- 외부: Supabase 개인 프로젝트 `irnmlsgccbvbhsrdxaad`(도쿄, 다른 테이블은 무관 — 건드리지 않음), Edge Impulse Public 프로젝트 `aisle-guard` 1155404(bounding boxes)
+- `firmware/capture_cam/` 보드 카메라 사진 수집 스케치(예비용)
+- `firmware/build.ps1` 컴파일·업로드(`-Name`으로 스케치 선택), `firmware/tests/run_tests.ps1` 호스트 g++ 단위시험(test_logic, test_proto)
+- `tools/`: `aisle_frames.py`(공통 자르기, `tools/aisle.json`의 crop), `feed.py`(시연 전송·로그 `tools/logs/`), `extract_frames.py`→`tools/frames/`, `ei_upload.py`, `make_demo.py`(`tools/demo.json` → `videos/demo.mp4`+`demo_truth.json`), `verify.py`(성공 기준 계산), `capture.py`(예비)
+- `db/schema.sql`(적용됨), `.github/workflows/ci.yml`
 
 ### 데이터 흐름 (방법 A, 2026-11-03 결정)
 - 집에서 실제 통로를 만들기 어려워 **AI 생성 창고 CCTV 영상**을 쓴다. 기준 사진 `ref.png`(CAM 14 South Aisle 스타일) + 클립 C1~C5.
@@ -24,20 +26,26 @@
 - 라벨: `obstacle`(통로 바닥의 상자·가방만), `person`. **선반 위 상자는 라벨을 달지 않는다.**
 
 ## 현재 상태
-- 2026-11-03 10:20 시작. PRD 작성, 저장소 생성, 사진 수집 스케치 보드에 올려 시험 촬영 확인(보드의 PPE 펌웨어는 덮어씀).
-- 사용자가 AI로 C1~C5 영상 생성 중.
+- 2026-11-03 11:30: 영상 없이 할 수 있는 것 완료. 판정 로직·프레임 수신·Supabase 전송을 모델 없이(`#FAKE`) 보드에서 확인: 경고 10.0초, 해제 방치 14.5초(실제 15초), DB 201. 단위시험 ALL PASS, 컴파일 OK, CI 추가.
+- 보드에는 `aisle_cam`(스텁 검출기)이 올라가 있다.
 
 ## 남은 일
 - [ ] 사용자: `videos/`에 `ref.png`, `C1.mp4`~`C5.mp4` 넣기
-- [ ] `logic.cpp` 판정 로직 (다각형 통로 영역, 시간 창 6/4, 해제 1, `DWELL_T` 10초, person 근처 제외) + 단위시험
-- [ ] `tools/feed.py` 프레임 전송 + 펌웨어 시리얼 프레임 수신 → 추론
-- [ ] 프레임 추출 → EI 프로젝트(`obstacle`/`person` FOMO) 업로드·라벨·학습 → Arduino zip 설치
-- [ ] Supabase `aisle_events` 테이블(RLS insert-only) + ESP32 HTTPS 저장
-- [ ] GitHub Actions: `unit-test`, `firmware-build`
-- [ ] 시연 영상 이어 붙이기 + 정답 시간표, 검증 시나리오 실측, README 정리, 제출 (16:30)
+- [ ] `tools/aisle.json` crop 정하기(통로 부분 정사각형) → `extract_frames.py videos --fps 3` → `ei_upload.py tools/frames`
+- [ ] EI: 라벨(AI labeling 후 선반 상자 지우기) → impulse 96×96 RGB + FOMO 0.35 → 학습(F1 확인) → Arduino zip → `build.ps1 -InstallLib`
+- [ ] 모델 빌드: `settings.h` `DETECTOR_EI 1`, `MODEL_VERSION`. CI용으로 EI 라이브러리를 `firmware/libraries/`에 커밋(Public 프로젝트 산출물)
+- [ ] 보드에서 `#AISLE ...`로 통로 다각형 설정, 추론 시간 확인(목표 500ms 이하)
+- [ ] `tools/demo.json` 작성(구간·정답 시각) → `make_demo.py` → `feed.py` → `verify.py` → README 검증 표·PRD 결과 칸 채우기
+- [ ] 시연 영상 촬영, 제출 (16:30)
+- [ ] Supabase 시험 행 `device_id='setup-test'`(id 1) 지우기 — 자동 삭제가 확인 창에서 취소됨
 - [ ] 제출 후: 보드에 PPE 펌웨어 다시 올리기
 
 ## 교훈
+- 시리얼에 바이너리 프레임과 텍스트 명령을 섞으면 명령 줄 버퍼에 프레임 찌꺼기가 붙는다 → 프레임 완성 때 줄 버퍼를 비우고, PC는 명령 앞에 `
+`을 붙인다.
+- pyserial로 포트를 열 때 DTR/RTS를 내리지 않으면 ESP32-S3가 리셋된다 → `feed.py`는 `dtr=False, rts=False` 후 open, `#AISLE?` 응답을 기다린 뒤 보낸다.
+- OpenCV `imwrite`/`imread`는 한글 경로에서 조용히 실패한다 → `imencode` 후 파이썬으로 쓴다.
+- EI Keys 화면 기본 키는 ingestion 권한이라 프로젝트 설정 API가 403 → 설정은 Studio 화면에서.
 - PPE에서 이어진 것: 한글 사용자 폴더에서는 ESP32 링크와 MinGW가 깨진다 → 스크립트의 subst 우회 유지. EI SDK `ei_calloc`은 16바이트 정렬로 덮어써야 esp-nn에서 힙이 안 깨진다(`detector_ei.cpp`). `crop_and_interpolate_rgb888`은 dst에 먼저 잘라낸 크기로 쓰므로 버퍼를 모델 크기로 잡으면 넘친다.
 - PowerShell 변수는 대소문자를 구분하지 않는다: `param($Sketch)`와 `$sketch`가 같은 변수라 `build.ps1` 인자를 `-Name`으로 지었다.
 - bash에서 파이썬 heredoc으로 `"C:\a..."`를 쓰면 `\a`가 제어 문자로 바뀐다 → 경로 문자열은 Edit 도구로 고치거나 확인한다.

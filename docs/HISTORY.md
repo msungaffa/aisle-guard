@@ -20,3 +20,13 @@
 - 방법 A 채택: PC가 영상 프레임을 USB 시리얼로 ESP32에 보냄. 이유: 학습 입력과 시연 입력이 같음, 반복 가능, 정답 시간을 알아 ±1초 검증 가능. 방법 B(보드 카메라로 화면 촬영)는 반사·줄무늬로 정확도 하락.
 - 클립 5개라 학습/시연 분리 불가 → 클립마다 마지막 30%를 시험 세트로 두는 시간 분할 + 보고서에 한계 명시. 근거: 고정 카메라 현장 맞춤 학습(기획 페이지의 "현장 영상으로 다듬는다").
 - 기준 사진: 선반에 상자가 많은 CAM 14 South Aisle 스타일 선택. 선반 상자 오인 대책: 다각형(사다리꼴) 통로 영역, 바닥 물건에만 라벨, 보내기 전 통로 부분만 자르기. 96×96에서 먼 물건은 작아서 프롬프트를 "카메라 가까이, 화면 아래쪽"으로 수정.
+
+## 2026-11-03 연결과 영상 없이 할 수 있는 것
+- 연결: GitHub(gh, 기존), Edge Impulse Public 프로젝트 `aisle-guard`(ID 1155404) 생성 — 비공개 자리 0/3이라 사용자가 Public 선택, labeling method를 bounding boxes로(키가 ingestion 권한이라 API로는 403, Studio 화면에서 바꿈). Supabase는 일시정지된 개인 프로젝트를 복구(사용자 선택), 다른 테이블(documents 등)은 건드리지 않음.
+- `aisle_events` 마이그레이션 적용(첫 시도는 `drop policy if exists` 때문인지 확인 창이 자동 취소 → 빼고 재시도). anon 키 시험: insert 201, select 401, delete 401, 잘못된 event 400. advisor에 aisle_events 관련 경고 없음.
+- 판정 로직 TDD: 시험 18개 먼저 쓰고 스텁으로 실패 확인(logic 38 FAILED, proto 23 FAILED) 후 구현 → ALL PASS. 설계 결정: 사람 근처(16px) obstacle은 Absent가 아니라 Skip(창에 안 넣음) — Absent로 치면 사람이 상자 옆을 지나가는 C2에서 해제가 잘못 나올 수 있어서. 방치 시작 = 점유가 된 창 안의 첫 "있음" 프레임 시각.
+- 프레임 형식 `AGFR`+video_ms+len+RGB888(27,648B)+xor. USB CDC라 보율과 상관없이 빠르고, 보드가 늦으면 USB가 PC 쓰기를 막아 손실 없음.
+- 업로더는 코어 0 FreeRTOS 태스크(TLS 핸드셰이크 1.5~2초가 판정 루프를 막지 않게). 코어 3.3.12의 `NetworkClientSecure::useBuiltinCACertBundle()`로 인증서 검사 유지(PRD 위험 표의 "검사 생략" 대안은 안 씀).
+- 보드 배선 시험(`#FAKE 48 48 0.9`, 회색 프레임 2fps): 첫 실행 경고 10.0초·DB 201, 해제 명령이 안 먹음(프레임 찌꺼기 + 명령) → 수정. 두 번째 실행에서 포트 열 때 보드 리셋 → DTR/RTS 끔. 최종: 경고 v=10.0초, `#FAKE off` 15.0초 → 해제 v=17.0초, dwell 14.5초(−0.5초), 업로드 1.5~1.8초, DB 행 확인.
+- 도구: extract_frames(한글 경로 imwrite 실패 → imencode), ei_upload(dry-run 확인, 실제 업로드는 영상 후), make_demo, verify(합성 로그로 자체 시험 PASS).
+- CI: unit-test(g++ -Werror), firmware-build(arduino-cli + esp32 3.3.12, 코어 캐시, secrets.example.h 복사, `firmware/libraries` 있으면 사용).
