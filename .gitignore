@@ -8,3 +8,4 @@ firmware/tests/build/
 __pycache__/
 videos/
 tools/logs/
+tools/frames/

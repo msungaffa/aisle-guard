@@ -1,0 +1,47 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and run logic/proto tests (g++)
+        run: |
+          mkdir -p build
+          src=firmware/aisle_cam
+          g++ -std=c++17 -Wall -Wextra -Werror -I $src firmware/tests/test_logic.cpp $src/logic.cpp -o build/test_logic
+          g++ -std=c++17 -Wall -Wextra -Werror -I $src firmware/tests/test_proto.cpp $src/proto.cpp -o build/test_proto
+          ./build/test_logic
+          ./build/test_proto
+
+  firmware-build:
+    runs-on: ubuntu-latest
+    env:
+      FQBN: esp32:esp32:XIAO_ESP32S3:PSRAM=opi
+      ESP32_CORE: "3.3.12"
+      ESP32_URL: https://espressif.github.io/arduino-esp32/package_esp32_index.json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: arduino/setup-arduino-cli@v2
+      - name: Cache esp32 core
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.arduino15/packages
+            ~/.arduino15/staging
+          key: arduino-esp32-${{ env.ESP32_CORE }}
+      - name: Install esp32 core
+        run: |
+          arduino-cli config init --overwrite --additional-urls "$ESP32_URL"
+          arduino-cli core update-index
+          arduino-cli core install "esp32:esp32@$ESP32_CORE"
+      - name: Compile aisle_cam
+        run: |
+          cp firmware/aisle_cam/secrets.example.h firmware/aisle_cam/secrets.h
+          libs=""
+          if [ -d firmware/libraries ]; then libs="--libraries firmware/libraries"; fi
+          arduino-cli compile --fqbn "$FQBN" $libs --warnings default firmware/aisle_cam
