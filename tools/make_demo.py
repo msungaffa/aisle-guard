@@ -15,7 +15,9 @@ demo.json 예:
     {"segment": 6, "at": 0.0, "event": "person_start"}, {"segment": 6, "at": 8.0, "event": "person_end"}
   ]
 }
-사용: python tools/make_demo.py            (videos/ 아래 파일을 읽는다)
+클립은 {"clip": "C1.mp4", "from": 0, "to": 8}처럼 일부만 쓸 수 있다.
+사용: python tools/make_demo.py [tools/scenario_x.json]   (기본 tools/demo.json, videos/ 아래 파일을 읽는다)
+      출력 이름은 설계 파일 이름을 따른다: demo.json → videos/demo.mp4 + demo_truth.json
 """
 import json
 import os
@@ -52,7 +54,8 @@ def read_image(name):
 
 
 def main():
-    spec_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "demo.json")
+    spec_path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(os.path.abspath(__file__)), "demo.json")
+    stem = os.path.splitext(os.path.basename(spec_path))[0]
     spec = json.load(open(spec_path, encoding="utf-8"))
     out_fps = spec.get("fps", 30)
     cache = {}
@@ -63,8 +66,10 @@ def main():
         if "clip" in seg:
             fps, frames = cache.setdefault(seg["clip"], read_clip(seg["clip"]))
             # 원본 fps가 달라도 시간이 맞게 다시 뽑는다
-            n = int(round(len(frames) / fps * out_fps))
-            out_frames += [frames[min(len(frames) - 1, int(i * fps / out_fps))] for i in range(n)]
+            a = seg.get("from", 0.0)
+            b = seg.get("to", len(frames) / fps)
+            n = int(round((b - a) * out_fps))
+            out_frames += [frames[min(len(frames) - 1, int(a * fps + i * fps / out_fps))] for i in range(n)]
         else:
             if "image" in seg:
                 img = read_image(seg["image"])
@@ -75,7 +80,7 @@ def main():
             out_frames += [img] * int(round(seg["sec"] * out_fps))
         size = size or (out_frames[0].shape[1], out_frames[0].shape[0])
 
-    out_path = os.path.join(VID, "demo.mp4")
+    out_path = os.path.join(VID, stem + ".mp4")
     w = cv2.VideoWriter(out_path, cv2.VideoWriter_fourcc(*"mp4v"), out_fps, size)
     for f in out_frames:
         if (f.shape[1], f.shape[0]) != size:
@@ -87,9 +92,9 @@ def main():
     for t in spec.get("truth", []):
         truth.append({**t, "t": round(starts[t["segment"]] + t["at"], 2)})
     json.dump({"duration": round(len(out_frames) / out_fps, 2), "segment_starts": [round(s, 2) for s in starts],
-               "truth": truth}, open(os.path.join(VID, "demo_truth.json"), "w", encoding="utf-8"), indent=2,
+               "truth": truth}, open(os.path.join(VID, stem + "_truth.json"), "w", encoding="utf-8"), indent=2,
               ensure_ascii=False)
-    print(f"videos/demo.mp4 {len(out_frames) / out_fps:.1f}s, segments at {[round(s, 1) for s in starts]}")
+    print(f"videos/{stem}.mp4 {len(out_frames) / out_fps:.1f}s, segments at {[round(s, 1) for s in starts]}")
     for t in truth:
         print(f"  {t['t']:7.2f}s {t['event']} {t.get('what', '')}")
 

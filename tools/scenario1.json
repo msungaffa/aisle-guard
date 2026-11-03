@@ -1,0 +1,308 @@
+{
+ "note": "PRD 시나리오 1·2: 상자 15초(4.7+5+5.3) 방치 후 치움 x10. 기대: 매번 경고·해제, dwell 오차 ±1초",
+ "fps": 24,
+ "segments": [
+  {
+   "hold_first": "C1.mp4",
+   "sec": 2
+  },
+  {
+   "clip": "C1.mp4",
+   "from": 2,
+   "to": 10
+  },
+  {
+   "hold_last": "C1.mp4",
+   "sec": 5
+  },
+  {
+   "clip": "C3.mp4",
+   "from": 0,
+   "to": 8
+  },
+  {
+   "hold_first": "C1.mp4",
+   "sec": 2
+  },
+  {
+   "clip": "C1.mp4",
+   "from": 2,
+   "to": 10
+  },
+  {
+   "hold_last": "C1.mp4",
+   "sec": 5
+  },
+  {
+   "clip": "C3.mp4",
+   "from": 0,
+   "to": 8
+  },
+  {
+   "hold_first": "C1.mp4",
+   "sec": 2
+  },
+  {
+   "clip": "C1.mp4",
+   "from": 2,
+   "to": 10
+  },
+  {
+   "hold_last": "C1.mp4",
+   "sec": 5
+  },
+  {
+   "clip": "C3.mp4",
+   "from": 0,
+   "to": 8
+  },
+  {
+   "hold_first": "C1.mp4",
+   "sec": 2
+  },
+  {
+   "clip": "C1.mp4",
+   "from": 2,
+   "to": 10
+  },
+  {
+   "hold_last": "C1.mp4",
+   "sec": 5
+  },
+  {
+   "clip": "C3.mp4",
+   "from": 0,
+   "to": 8
+  },
+  {
+   "hold_first": "C1.mp4",
+   "sec": 2
+  },
+  {
+   "clip": "C1.mp4",
+   "from": 2,
+   "to": 10
+  },
+  {
+   "hold_last": "C1.mp4",
+   "sec": 5
+  },
+  {
+   "clip": "C3.mp4",
+   "from": 0,
+   "to": 8
+  },
+  {
+   "hold_first": "C1.mp4",
+   "sec": 2
+  },
+  {
+   "clip": "C1.mp4",
+   "from": 2,
+   "to": 10
+  },
+  {
+   "hold_last": "C1.mp4",
+   "sec": 5
+  },
+  {
+   "clip": "C3.mp4",
+   "from": 0,
+   "to": 8
+  },
+  {
+   "hold_first": "C1.mp4",
+   "sec": 2
+  },
+  {
+   "clip": "C1.mp4",
+   "from": 2,
+   "to": 10
+  },
+  {
+   "hold_last": "C1.mp4",
+   "sec": 5
+  },
+  {
+   "clip": "C3.mp4",
+   "from": 0,
+   "to": 8
+  },
+  {
+   "hold_first": "C1.mp4",
+   "sec": 2
+  },
+  {
+   "clip": "C1.mp4",
+   "from": 2,
+   "to": 10
+  },
+  {
+   "hold_last": "C1.mp4",
+   "sec": 5
+  },
+  {
+   "clip": "C3.mp4",
+   "from": 0,
+   "to": 8
+  },
+  {
+   "hold_first": "C1.mp4",
+   "sec": 2
+  },
+  {
+   "clip": "C1.mp4",
+   "from": 2,
+   "to": 10
+  },
+  {
+   "hold_last": "C1.mp4",
+   "sec": 5
+  },
+  {
+   "clip": "C3.mp4",
+   "from": 0,
+   "to": 8
+  },
+  {
+   "hold_first": "C1.mp4",
+   "sec": 2
+  },
+  {
+   "clip": "C1.mp4",
+   "from": 2,
+   "to": 10
+  },
+  {
+   "hold_last": "C1.mp4",
+   "sec": 5
+  },
+  {
+   "clip": "C3.mp4",
+   "from": 0,
+   "to": 8
+  }
+ ],
+ "truth": [
+  {
+   "segment": 1,
+   "at": 3.3,
+   "event": "placed",
+   "what": "box"
+  },
+  {
+   "segment": 3,
+   "at": 5.3,
+   "event": "removed",
+   "what": "box"
+  },
+  {
+   "segment": 5,
+   "at": 3.3,
+   "event": "placed",
+   "what": "box"
+  },
+  {
+   "segment": 7,
+   "at": 5.3,
+   "event": "removed",
+   "what": "box"
+  },
+  {
+   "segment": 9,
+   "at": 3.3,
+   "event": "placed",
+   "what": "box"
+  },
+  {
+   "segment": 11,
+   "at": 5.3,
+   "event": "removed",
+   "what": "box"
+  },
+  {
+   "segment": 13,
+   "at": 3.3,
+   "event": "placed",
+   "what": "box"
+  },
+  {
+   "segment": 15,
+   "at": 5.3,
+   "event": "removed",
+   "what": "box"
+  },
+  {
+   "segment": 17,
+   "at": 3.3,
+   "event": "placed",
+   "what": "box"
+  },
+  {
+   "segment": 19,
+   "at": 5.3,
+   "event": "removed",
+   "what": "box"
+  },
+  {
+   "segment": 21,
+   "at": 3.3,
+   "event": "placed",
+   "what": "box"
+  },
+  {
+   "segment": 23,
+   "at": 5.3,
+   "event": "removed",
+   "what": "box"
+  },
+  {
+   "segment": 25,
+   "at": 3.3,
+   "event": "placed",
+   "what": "box"
+  },
+  {
+   "segment": 27,
+   "at": 5.3,
+   "event": "removed",
+   "what": "box"
+  },
+  {
+   "segment": 29,
+   "at": 3.3,
+   "event": "placed",
+   "what": "box"
+  },
+  {
+   "segment": 31,
+   "at": 5.3,
+   "event": "removed",
+   "what": "box"
+  },
+  {
+   "segment": 33,
+   "at": 3.3,
+   "event": "placed",
+   "what": "box"
+  },
+  {
+   "segment": 35,
+   "at": 5.3,
+   "event": "removed",
+   "what": "box"
+  },
+  {
+   "segment": 37,
+   "at": 3.3,
+   "event": "placed",
+   "what": "box"
+  },
+  {
+   "segment": 39,
+   "at": 5.3,
+   "event": "removed",
+   "what": "box"
+  }
+ ]
+}

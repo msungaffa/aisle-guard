@@ -1,0 +1,77 @@
+{
+ "note": "PRD 시나리오 3: 사람만 지나감(C5) x10. 기대: 경고 0",
+ "fps": 24,
+ "segments": [
+  {
+   "hold_first": "C5.mp4",
+   "sec": 1
+  },
+  {
+   "clip": "C5.mp4"
+  },
+  {
+   "hold_first": "C5.mp4",
+   "sec": 1
+  },
+  {
+   "clip": "C5.mp4"
+  },
+  {
+   "hold_first": "C5.mp4",
+   "sec": 1
+  },
+  {
+   "clip": "C5.mp4"
+  },
+  {
+   "hold_first": "C5.mp4",
+   "sec": 1
+  },
+  {
+   "clip": "C5.mp4"
+  },
+  {
+   "hold_first": "C5.mp4",
+   "sec": 1
+  },
+  {
+   "clip": "C5.mp4"
+  },
+  {
+   "hold_first": "C5.mp4",
+   "sec": 1
+  },
+  {
+   "clip": "C5.mp4"
+  },
+  {
+   "hold_first": "C5.mp4",
+   "sec": 1
+  },
+  {
+   "clip": "C5.mp4"
+  },
+  {
+   "hold_first": "C5.mp4",
+   "sec": 1
+  },
+  {
+   "clip": "C5.mp4"
+  },
+  {
+   "hold_first": "C5.mp4",
+   "sec": 1
+  },
+  {
+   "clip": "C5.mp4"
+  },
+  {
+   "hold_first": "C5.mp4",
+   "sec": 1
+  },
+  {
+   "clip": "C5.mp4"
+  }
+ ],
+ "truth": []
+}

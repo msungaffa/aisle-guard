@@ -1,0 +1,47 @@
+{
+ "note": "PRD 시나리오 5: 통로 다각형 오른쪽 바깥 바닥에 C1 상자를 합성한 정지 화면(videos/outside_box.png) 15초 x5. 기대: 경고 0",
+ "fps": 24,
+ "segments": [
+  {
+   "hold_first": "C1.mp4",
+   "sec": 3
+  },
+  {
+   "image": "outside_box.png",
+   "sec": 15
+  },
+  {
+   "hold_first": "C1.mp4",
+   "sec": 3
+  },
+  {
+   "image": "outside_box.png",
+   "sec": 15
+  },
+  {
+   "hold_first": "C1.mp4",
+   "sec": 3
+  },
+  {
+   "image": "outside_box.png",
+   "sec": 15
+  },
+  {
+   "hold_first": "C1.mp4",
+   "sec": 3
+  },
+  {
+   "image": "outside_box.png",
+   "sec": 15
+  },
+  {
+   "hold_first": "C1.mp4",
+   "sec": 3
+  },
+  {
+   "image": "outside_box.png",
+   "sec": 15
+  }
+ ],
+ "truth": []
+}

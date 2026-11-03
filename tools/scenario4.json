@@ -1,0 +1,138 @@
+{
+ "note": "PRD 시나리오 4: C1 8초까지(상자 2.7초) + C3 3초부터(상자 2.3초) = 5초 방치 x5. 클립 이음새에서 사람 위치가 튄다. 기대: 경고 0",
+ "fps": 24,
+ "segments": [
+  {
+   "hold_first": "C1.mp4",
+   "sec": 3
+  },
+  {
+   "clip": "C1.mp4",
+   "from": 2,
+   "to": 8
+  },
+  {
+   "clip": "C3.mp4",
+   "from": 3,
+   "to": 8
+  },
+  {
+   "hold_first": "C1.mp4",
+   "sec": 3
+  },
+  {
+   "clip": "C1.mp4",
+   "from": 2,
+   "to": 8
+  },
+  {
+   "clip": "C3.mp4",
+   "from": 3,
+   "to": 8
+  },
+  {
+   "hold_first": "C1.mp4",
+   "sec": 3
+  },
+  {
+   "clip": "C1.mp4",
+   "from": 2,
+   "to": 8
+  },
+  {
+   "clip": "C3.mp4",
+   "from": 3,
+   "to": 8
+  },
+  {
+   "hold_first": "C1.mp4",
+   "sec": 3
+  },
+  {
+   "clip": "C1.mp4",
+   "from": 2,
+   "to": 8
+  },
+  {
+   "clip": "C3.mp4",
+   "from": 3,
+   "to": 8
+  },
+  {
+   "hold_first": "C1.mp4",
+   "sec": 3
+  },
+  {
+   "clip": "C1.mp4",
+   "from": 2,
+   "to": 8
+  },
+  {
+   "clip": "C3.mp4",
+   "from": 3,
+   "to": 8
+  }
+ ],
+ "truth": [
+  {
+   "segment": 1,
+   "at": 3.3,
+   "event": "placed",
+   "what": "box"
+  },
+  {
+   "segment": 2,
+   "at": 2.3,
+   "event": "removed",
+   "what": "box"
+  },
+  {
+   "segment": 4,
+   "at": 3.3,
+   "event": "placed",
+   "what": "box"
+  },
+  {
+   "segment": 5,
+   "at": 2.3,
+   "event": "removed",
+   "what": "box"
+  },
+  {
+   "segment": 7,
+   "at": 3.3,
+   "event": "placed",
+   "what": "box"
+  },
+  {
+   "segment": 8,
+   "at": 2.3,
+   "event": "removed",
+   "what": "box"
+  },
+  {
+   "segment": 10,
+   "at": 3.3,
+   "event": "placed",
+   "what": "box"
+  },
+  {
+   "segment": 11,
+   "at": 2.3,
+   "event": "removed",
+   "what": "box"
+  },
+  {
+   "segment": 13,
+   "at": 3.3,
+   "event": "placed",
+   "what": "box"
+  },
+  {
+   "segment": 14,
+   "at": 2.3,
+   "event": "removed",
+   "what": "box"
+  }
+ ]
+}
