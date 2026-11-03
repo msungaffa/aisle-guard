@@ -76,6 +76,25 @@
 
 모든 수치(0.6, 6/4/1, 10초)는 `LogicConfig` 한 곳에 있다. 규칙은 Arduino에 기대지 않아 PC에서 단위시험(`firmware/tests/test_logic.cpp`)을 돌리고 CI도 같은 시험을 돌린다.
 
+### LED 경고 (`aisle_cam.ino`의 `led_loop`)
+
+LED는 프레임마다 반응하지 않고 판정 단계(`AisleLogic::level()`)만 본다. 판정과 표시가 나뉘어 있어 LED 쪽은 단계를 깜빡임 속도로 바꾸기만 한다.
+
+| 단계 | 언제 | LED |
+|---|---|---|
+| 0 정상 | 점유 아님 | 꺼짐 |
+| 1 관찰 | 점유 시작 ~ 10초 전 | 1Hz로 천천히 깜빡임 (0.5초 켜짐 / 0.5초 꺼짐) |
+| 2 경고 | 점유 10초 이상 | 5Hz로 빠르게 깜빡임 (0.1초씩), `warning` 기록 |
+
+- 깜빡임은 `millis()`를 나눈 값의 홀짝으로 정해서 따로 타이머가 없다. 매 `loop()`마다 다시 계산한다.
+- XIAO ESP32S3 사용자 LED(GPIO 21)는 LOW일 때 켜진다.
+- 판정과 LED는 보드 안에서만 돌기 때문에 Wi-Fi가 끊겨도 경고는 계속된다. DB 기록은 큐에 두었다가 다시 연결되면 보낸다.
+
+예: 상자를 15초 두었다 치우면 다음과 같이 진행된다.
+1. 6프레임 창에 "있음"이 4개 쌓이면(약 2초) 점유가 시작되고 1Hz로 깜빡인다. 방치 시간은 첫 "있음" 프레임부터 센다.
+2. 10초가 되면 5Hz로 바뀌고 `warning`을 기록한다.
+3. 상자를 치워 창의 "있음"이 1개 이하가 되면 LED가 꺼지고 `cleared`(방치 약 15초)를 기록한다.
+
 ## 모델
 
 | 항목 | 값 |
@@ -117,7 +136,7 @@
 powershell -File firmware/tests/run_tests.ps1        # 판정 로직 단위시험
 powershell -File firmware/build.ps1 -Port COM10      # 컴파일 + 업로드
 python tools/feed.py COM10 videos/demo.mp4           # USB 모드 시연
-python tools/screen.py COM10 videos/demo.mp4         # 카메라 모드 시연
+python tools/screen.py COM10 videos/demo.mp4         # 카메라 모드 시연 (camera_demo.bat 더블클릭과 같음)
 python tools/verify.py tools/logs/feed_<시각>.log    # 성공 기준 계산
 ```
 
