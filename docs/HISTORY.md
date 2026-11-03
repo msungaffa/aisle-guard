@@ -144,3 +144,4 @@
 - USB 시나리오 1(15초 ×10): 경고 10/10, 지연 9.7~10.2초, **dwell 오차 10회 모두 0.0초**(d1은 +1.0초), 오경보 0.
 - USB 시연 1회차: 상자 경고 직후 **보드 재부팅** → 판정 초기화로 해제 없이 다시 경고(verify FAIL, 오경보 1). 원인(백트레이스 해석): 업로더 태스크 `HTTPClient::POST → hostByName → dns_clear_cache`가 대기 중이던 **SNTP의 DNS 콜백**(sntp_dns_found → sntp_request → udp_new)을 TCPIP 잠금 없이 실행 → lwIP assert `udp_new_ip_type ... Required to lock TCPIP core functionality`. SNTP 재요청과 업로드가 겹칠 때만 나는 경합이라 그동안 안 보였음(모델과 무관).
 - 수정: `net.cpp`가 시각을 맞추면(또는 30초 지나면) `esp_sntp_stop()`, `uploader.cpp`는 그 뒤에만 전송. 단위시험 ALL PASS, 업로드 후 USB 시연 2회차: 상자 지연 10.2초·dwell **+0.0초**, 가방 지연 10.6초, 오경보 0, DB 201 4건 → PASS.
+- d2 카메라 모드(손에 들고, 좌우 반전 h=1, **conf_min 0.6 그대로**): 상자 경고 지연 10.3초·dwell +1.0초, 가방 지연 10.2초, 오경보 0, 최고 점수 1.00, 재부팅 없음(201 ×7), 추론 162~163ms → verify PASS. `screen.py` 기본 `--conf`를 0.6으로 되돌림(d1은 0.4가 필요했음).

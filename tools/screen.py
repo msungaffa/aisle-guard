@@ -68,8 +68,8 @@ def main():
     ap.add_argument("--size", type=int, default=640, help="영상 칸 한 변 픽셀")
     ap.add_argument("--aisle", default=CAM_AISLE, help="카메라 모드 판정 영역 (96 좌표, 기본 aisle.json, 끝나면 aisle.json 값으로 되돌림)")
     ap.add_argument("--camcrop", default=None, help='보드 카메라 자르기 "x y side" (QVGA 좌표)')
-    ap.add_argument("--conf", type=float, default=0.4,
-                    help="카메라 모드 판정 점수 기준 (화면 재촬영이라 점수가 낮게 흔들림, 끝나면 0.6으로 되돌림)")
+    ap.add_argument("--conf", type=float, default=0.6,
+                    help="카메라 모드 판정 점수 기준 (d1은 0.4가 필요했고 d2는 0.6으로 통과, 끝나면 0.6으로 되돌림)")
     ap.add_argument("--ae", type=int, default=-1, help="카메라 자동 노출 목표 -2~2 (창에서 - / = 로 바꿈)")
     ap.add_argument("--mirror", default="0 0", help='카메라 좌우·상하 반전 "h v" (창에서 m / f 로 바꿈)')
     ap.add_argument("--aim-at", type=float, default=20.0, help="조준할 때 멈춰 보여 줄 영상 시각(초, 상자가 있는 장면)")
