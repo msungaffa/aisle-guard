@@ -8,13 +8,13 @@
 
 #define FW_VERSION "0.1.0"
 
-// 1이면 Edge Impulse 모델(라이브러리 설치 필요), 0이면 검출 없음 스텁(CI·배선 시험용)
+// 1이면 Edge Impulse 모델(firmware/libraries/aisle-guard-v2_inferencing), 0이면 검출 없음 스텁(배선 시험용)
 #ifndef DETECTOR_EI
-#define DETECTOR_EI 0
+#define DETECTOR_EI 1
 #endif
-#define EI_HEADER <aisle-guard_inferencing.h>
+#define EI_HEADER <aisle-guard-v2_inferencing.h>
 #ifndef MODEL_VERSION
-#define MODEL_VERSION "none"
+#define MODEL_VERSION "ei1155430-d1"
 #endif
 #define EI_MIN_SCORE 0.3f   // 모델이 내보내는 최저 점수. 판정은 logic의 CONF_MIN(0.6)으로 다시 거른다
 

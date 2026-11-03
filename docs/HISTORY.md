@@ -40,3 +40,11 @@
 - `db/queries.sql`: 시간대별 경고, 하루 단위 평균·최대 방치, 경고-해제 짝(시작 시각 ±2초), 장치별 마지막 heartbeat(3분 넘으면 offline), 오경보 비율, 모델 버전별 비교. 실제 DB에서 모두 실행 확인(해제 1건 14.5초, 해제 안 된 경고 2건 = 리허설 중 feed 중단).
 - 오경보 표시: 원본 `aisle_events`는 장치가 쓰는 기록이라 고치지 않고 별도 표 `aisle_event_reviews(event_id, verdict, note)`. RLS 켬, anon·authenticated 권한 0 확인. MCP 마이그레이션은 권한 단계에서 막혀 사용자가 SQL 편집기에서 실행.
 - 대시보드: Supabase 연결은 이 PC의 로컬 MCP라 웹 페이지가 실시간으로 읽을 수 없고, anon에 select를 열지 않기로 함 → DB 행을 JSON으로 받아 붙인 스냅숏(Dashboard 아티팩트). 실측 뒤 다시 받는다.
+
+## 2026-11-03 ① 모델 (창 ①)
+- crop: 1280×720에서 [440, 320, 400, 400](통로 바닥), 통로 다각형 96×96 `36 0 58 0 94 96 0 96` → `tools/aisle.json`.
+- 프레임: 클립 5개 × 10초, 3fps → training 105 / testing 45(클립마다 마지막 30%).
+- 라벨: 손 대신 `tools/autolabel.py`(고정 카메라 → 빈 통로와의 차이). 첫 시도는 상자 그림자 꼬리 때문에 상자가 세로로 길어져 person으로 분류, 사람이 상자 옆이면 한 덩어리 → 클립별로 물건이 혼자 보이는 프레임에서 위치를 잡고(그림자 줄 잘라냄) 그 자리가 기준 모습과 비슷하면 obstacle, 나머지 덩어리는 person(통로 밖 사람도 라벨). 150장 시트로 눈 확인. 박스: training obstacle 46 / person 113, testing 50개.
+- EI: 기존 프로젝트(1155404)에 라벨 없이 먼저 올렸는데 키가 ingestion 권한이라 박스를 붙일 수 없음. admin 키 생성은 자동 권한 검사에서 거부, 샘플 삭제는 데이터 영구 삭제라 하지 않음 → 새 Public 프로젝트 `aisle-guard-v2`(1155430)에 박스와 함께 업로드. 옛 프로젝트는 사용자가 나중에 지워도 됨.
+- 학습: 96×96 RGB, FOMO MobileNetV2 0.35, 60 cycles, lr 0.001, augmentation. 검증 F1 0.85(obstacle 0.89, person 0.83), 정밀도 0.93, 재현율 0.78. 시험 세트(float32) 정확도 71%, F1 0.78 — 물건 프레임은 대부분 100%, C5 끝(카메라 바로 앞 큰 사람)은 학습 구간에 없어서 놓침. 사람을 놓치는 건 경고를 만들지 않음.
+- 배포: API로 Arduino int8 tflite 빌드(deploy v1) → `firmware/libraries/aisle-guard-v2_inferencing`(25MB, 1337 파일) 커밋, `build.ps1`도 `--libraries firmware/libraries` 사용(CI와 같게). `DETECTOR_EI 1`, `MODEL_VERSION "ei1155430-d1"`.

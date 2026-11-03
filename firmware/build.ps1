@@ -34,7 +34,11 @@ try {
         & $cli lib install --zip-path (Resolve-Path $InstallLib).Path
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     }
-    & $cli compile --fqbn $fqbn --build-path $buildPath $sketch
+    # Libraries committed in the repo (Edge Impulse model) are used the same way as in CI
+    $libArgs = @()
+    $repoLibs = Join-Path $PSScriptRoot "libraries"
+    if (Test-Path $repoLibs) { $libArgs = @("--libraries", $repoLibs) }
+    & $cli compile --fqbn $fqbn --build-path $buildPath @libArgs $sketch
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     if ($Port) {
         & $cli upload --fqbn $fqbn --build-path $buildPath -p $Port $sketch
