@@ -8,6 +8,7 @@
 - 시연 영상(화면 녹화 + 보드 LED): https://drive.google.com/file/d/1YHrJpq66roO4Dqs8m1JyYQ0wWA_3UZJz/view?usp=sharing
 - PRD: https://claude.ai/artifact/7vguen5tdMA9Pb4VUPn3XW
 - 대시보드(DB 이벤트): https://claude.ai/artifact/Y96SJDB35Cw7M9EcPwVKvg
+- 한 장 요약(아키텍처 그림 + README): [`docs/index.html`](docs/index.html) (내려받아 브라우저로 열기)
 
 ## 어떻게 동작하나
 

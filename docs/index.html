@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>aisle-guard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: zones left→right in data-flow order (PC → ESP32 → Supabase), build-time zones (Edge Impulse, CI) underneath, interface list on the right */
+:root{
+  --bg:#f6f7f9; --paper:#ffffff; --ink:#1b2230; --muted:#5d6675; --line:#c9ced8; --zone:#e9ecf1;
+  --a:#c8571b; --a-bg:#fdf1ea; --a-bd:#efc3a8;
+  --b:#1f8a4c; --b-bg:#ecf7f0; --b-bd:#a9d9bb;
+  --c:#0f7d86; --c-bg:#e8f6f7; --c-bd:#a3d6da;
+  --d:#5b45c4; --d-bg:#f1eefc; --d-bd:#c5bbef;
+  --e:#b0336f; --e-bg:#fbedf4; --e-bd:#ebb5cf;
+  --f:#2c63c7; --f-bg:#ecf2fc; --f-bd:#b2c8ee;
+  --side:#20252e; --side-ink:#e8ebf0; --side-muted:#9aa3b2; --side-card:#2b313c;
+  --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12151b; --paper:#1a1e26; --ink:#e6e9ef; --muted:#9aa2b1; --line:#3a414d; --zone:#232833;
+  --a:#f08a52; --a-bg:#2a1d16; --a-bd:#6b3c22;
+  --b:#4fc483; --b-bg:#16261d; --b-bd:#2d5e41;
+  --c:#45bfc8; --c-bg:#142629; --c-bd:#2a5a5f;
+  --d:#9d8cf0; --d-bg:#1f1b33; --d-bd:#463b80;
+  --e:#ea6fa8; --e-bg:#2b1823; --e-bd:#6d3050;
+  --f:#6f9cf0; --f-bg:#172033; --f-bd:#34507f;
+  --side:#0c0e12; --side-ink:#e6e9ef; --side-muted:#8c95a4; --side-card:#1b1f27;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12151b; --paper:#1a1e26; --ink:#e6e9ef; --muted:#9aa2b1; --line:#3a414d; --zone:#232833;
+  --a:#f08a52; --a-bg:#2a1d16; --a-bd:#6b3c22;
+  --b:#4fc483; --b-bg:#16261d; --b-bd:#2d5e41;
+  --c:#45bfc8; --c-bg:#142629; --c-bd:#2a5a5f;
+  --d:#9d8cf0; --d-bg:#1f1b33; --d-bd:#463b80;
+  --e:#ea6fa8; --e-bg:#2b1823; --e-bd:#6d3050;
+  --f:#6f9cf0; --f-bg:#172033; --f-bd:#34507f;
+  --side:#0c0e12; --side-ink:#e6e9ef; --side-muted:#8c95a4; --side-card:#1b1f27;
+  color-scheme:dark}
+
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:13px;line-height:1.55}
+.wrap{max-width:1440px;margin:0 auto;padding-inline:20px;padding-block:28px 40px}
+header h1{font-size:26px;font-weight:700;letter-spacing:-.01em;margin:0 0 6px;text-wrap:balance}
+header p{margin:0;color:var(--muted);font-size:13.5px;max-width:110ch}
+header p b{color:var(--ink);font-weight:600}
+
+.board{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:22px;margin-top:22px;align-items:start}
+.main{display:grid;gap:18px;min-width:0}
+.flow{display:grid;grid-template-columns:minmax(0,.95fr) 64px minmax(0,1.45fr) 64px minmax(0,1fr);align-items:stretch}
+.build{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+
+.zone{border:1.5px dashed var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0;position:relative}
+.zone>.zt{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.zone>.zt span{font-family:var(--mono);font-weight:400;font-size:11px}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+
+.card{background:var(--paper);border:1.5px solid var(--bd);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.card.a{--k:var(--a);--kb:var(--a-bg);--bd:var(--a-bd)}
+.card.b{--k:var(--b);--kb:var(--b-bg);--bd:var(--b-bd)}
+.card.c{--k:var(--c);--kb:var(--c-bg);--bd:var(--c-bd)}
+.card.d{--k:var(--d);--kb:var(--d-bg);--bd:var(--d-bd)}
+.card.e{--k:var(--e);--kb:var(--e-bg);--bd:var(--e-bd)}
+.card.f{--k:var(--f);--kb:var(--f-bg);--bd:var(--f-bd)}
+.card.hero{background:var(--kb)}
+.ch{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.ch h3{margin:0;font-size:17px;font-weight:700;letter-spacing:-.01em;font-family:var(--mono)}
+.ch h3.k{font-family:var(--sans)}
+.badge{display:inline-grid;place-items:center;width:19px;height:19px;border-radius:50%;background:var(--k);color:var(--paper);font-size:11px;font-weight:700;font-family:var(--sans);transform:translateY(-2px)}
+.path{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.sub{color:var(--muted);font-size:12px;margin:-2px 0 0}
+.role{background:var(--kb);color:var(--k);font-weight:700;font-size:14px;border-radius:8px;padding:6px 10px;margin:2px 0}
+.card.hero .role{background:var(--paper)}
+ul{margin:0;padding:0;list-style:none;display:grid;gap:2px}
+li{position:relative;padding-left:11px}
+li::before{content:"";position:absolute;left:0;top:.72em;width:4px;height:4px;border-radius:50%;background:var(--line)}
+code{font-family:var(--mono);font-size:11.5px;background:var(--zone);padding:0 4px;border-radius:4px}
+.store{border-top:1px dashed var(--bd);padding-top:6px;margin-top:2px;font-size:12px}
+.store b{color:var(--k)}
+
+/* connectors */
+.conn{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:18px;padding:0 4px}
+.arrow{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;color:var(--muted);text-align:center;line-height:1.3}
+.arrow .ln{width:100%;min-width:44px;height:0;border-top:1.5px solid var(--muted);position:relative}
+.arrow .ln::after{content:"";position:absolute;right:-1px;top:-5.5px;border:5px solid transparent;border-left:7px solid var(--muted);border-right:0}
+.arrow.back .ln::after{right:auto;left:-1px;border-left:0;border-right:7px solid var(--muted)}
+.arrow b{font-family:var(--mono);font-weight:500;color:var(--ink);font-size:10.5px}
+.vlink{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);padding-left:6px}
+.vlink i{font-style:normal;font-size:15px;color:var(--muted)}
+
+/* sidebar */
+.side{display:grid;gap:14px;min-width:0}
+.panel{background:var(--side);color:var(--side-ink);border-radius:14px;padding:14px;display:grid;gap:10px}
+.panel h4{margin:0;font-size:13px;font-weight:700}
+.panel .hint{color:var(--side-muted);font-size:11.5px;margin:0}
+.if{background:var(--side-card);border-radius:9px;padding:9px 11px;display:grid;gap:2px}
+.if strong{font-size:12.5px}
+.if span{color:var(--side-muted);font-size:11.5px;font-family:var(--mono);overflow-wrap:anywhere}
+.box{background:var(--paper);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:6px}
+.box h4{margin:0;font-size:13px}
+.box ul{font-size:12px}
+.box .num{font-variant-numeric:tabular-nums;font-weight:600}
+.legend{display:grid;gap:5px;font-size:12px}
+.legend div{display:flex;align-items:center;gap:8px}
+.legend i{width:11px;height:11px;border-radius:3px;flex:none}
+
+@media (max-width:1180px){
+  .board{grid-template-columns:minmax(0,1fr)}
+  .side{grid-template-columns:repeat(auto-fit,minmax(260px,1fr));align-items:start}
+}
+@media (max-width:900px){
+  .flow{grid-template-columns:minmax(0,1fr)}
+  .conn{flex-direction:row;flex-wrap:wrap;padding:8px 0;gap:22px}
+  .arrow .ln{width:0;min-width:0;height:26px;border-top:0;border-left:1.5px solid var(--muted)}
+  .arrow .ln::after{right:auto;top:auto;bottom:-1px;left:-6px;border:5px solid transparent;border-top:7px solid var(--muted);border-bottom:0}
+  .arrow.back .ln::after{bottom:auto;top:-1px;left:-6px;border-top:0;border-bottom:7px solid var(--muted)}
+  .build,.cols{grid-template-columns:minmax(0,1fr)}
+}
+</style><style>
+.doc{max-width:1440px;margin:0 auto;padding-inline:20px;padding-block:0 48px;display:grid;gap:26px}
+.doc section{background:var(--paper);border:1.5px solid var(--line);border-radius:14px;padding:18px 20px;min-width:0}
+.doc h2{margin:0 0 10px;font-size:18px;text-wrap:balance}
+.doc p{margin:6px 0;max-width:95ch}
+.links{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.links a{color:var(--f);font-weight:600;text-decoration:none;border:1.5px solid var(--f-bd);background:var(--f-bg);border-radius:8px;padding:4px 10px}
+.links a:hover,.links a:focus-visible{text-decoration:underline}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:11.5px;letter-spacing:.03em}
+td.ok{color:var(--b);font-weight:700;font-variant-numeric:tabular-nums}
+pre{background:var(--zone);border-radius:10px;padding:12px 14px;overflow-x:auto;font-family:var(--mono);font-size:12px;margin:8px 0 0}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:26px}
+@media (max-width:900px){.two{grid-template-columns:minmax(0,1fr)}}
+</style>
+<style>body{margin:0}</style>
+</head>
+<body>
+
+<div class="wrap">
+<header>
+  <h1>aisle-guard 아키텍처 — 역할 분담</h1>
+  <p>통로 바닥에 물건이 <b>10초 넘게</b> 놓이면 ESP32가 LED로 경고하고 Supabase에 기록합니다. 사람은 세지 않습니다. <b>모델·판정은 보드 안에서만</b> 돌고, PC는 영상 공급·검증, Supabase는 저장, CI는 push마다 판정·컴파일·모델 품질을 막습니다.</p>
+<div class="links">
+<a href="https://drive.google.com/file/d/1YHrJpq66roO4Dqs8m1JyYQ0wWA_3UZJz/view?usp=sharing">시연 영상</a>
+<a href="https://github.com/msungaffa/aisle-guard">GitHub 저장소</a>
+<a href="https://github.com/msungaffa/aisle-guard/actions/workflows/ci.yml">CI</a>
+<a href="https://claude.ai/artifact/7vguen5tdMA9Pb4VUPn3XW">PRD</a>
+<a href="https://claude.ai/artifact/Y96SJDB35Cw7M9EcPwVKvg">DB 대시보드</a>
+</div></header>
+
+<div class="board">
+<div class="main">
+
+  <div class="flow">
+    <!-- PC -->
+    <section class="zone">
+      <div class="zt">PC · 입력과 검증 <span>tools/ · conda ztmc</span></div>
+      <div class="card a">
+        <div class="ch"><h3>feed.py</h3><span class="badge">A</span><span class="path">USB 모드</span></div>
+        <div class="role">영상을 잘라 96×96으로 보드에 보냄</div>
+        <ul>
+          <li><code>videos/demo.mp4</code> 재생</li>
+          <li><code>aisle.json</code> crop으로 통로만 자름</li>
+          <li><code>AGFR</code> 프레임으로 USB 시리얼 전송</li>
+          <li>매번 같은 입력 → 수치 검증용</li>
+          <li>보드 로그를 <code>tools/logs/</code>에 저장</li>
+        </ul>
+      </div>
+      <div class="card a">
+        <div class="ch"><h3>screen.py</h3><span class="badge">A</span><span class="path">카메라 모드</span></div>
+        <div class="role">화면을 띄우고 보드가 본 것을 보여줌</div>
+        <ul>
+          <li>왼쪽: 통로 영상 640×640 (보드 카메라가 찍음)</li>
+          <li>오른쪽: 판정 단계·검출 수·추론 ms</li>
+          <li>"board sees" 96×96 + 통로 영역 선</li>
+          <li>키 → <code>#CAMAE</code> <code>#CAMMIRROR</code></li>
+          <li><code>camera_demo.bat</code> 더블클릭</li>
+        </ul>
+      </div>
+      <div class="card a">
+        <div class="ch"><h3>verify.py</h3><span class="badge">A</span></div>
+        <div class="role">보드 로그 ↔ 정답 시각 비교</div>
+        <ul>
+          <li><code>demo_truth.json</code>의 둔·치운 시각</li>
+          <li>경고 지연 12초 이내, 방치 ±1초</li>
+          <li>오경보 수 · PASS/FAIL</li>
+        </ul>
+      </div>
+    </section>
+
+    <div class="conn">
+      <div class="arrow"><b>USB serial</b><span class="ln"></span>96×96 프레임<br>#명령</div>
+      <div class="arrow back"><b>F / V 줄</b><span class="ln"></span>판정·검출<br>보드 화면</div>
+    </div>
+
+    <!-- ESP32 -->
+    <section class="zone">
+      <div class="zt">XIAO ESP32S3 Sense · Arduino <span>firmware/aisle_cam/ · PSRAM=opi</span></div>
+      <div class="card b hero">
+        <div class="ch"><h3>aisle_cam.ino</h3><span class="badge">B</span><span class="path">loop · 코어 1</span></div>
+        <div class="role">프레임 받기 → 추론 → 판정 → LED → 이벤트</div>
+        <ul>
+          <li>입력 둘: 시리얼 프레임 / <code>camera.cpp</code> OV2640 (<code>#CAM on</code>)</li>
+          <li><code>#CAMCROP</code>로 검은 테 없이 꽉 차게 자름</li>
+          <li><code>led_loop</code>: GPIO 21 (LOW=켜짐), 단계만 보고 깜빡임</li>
+          <li>Wi-Fi가 끊겨도 판정·LED는 계속</li>
+        </ul>
+      </div>
+      <div class="cols">
+        <div class="card b">
+          <div class="ch"><h3>detector_ei</h3><span class="badge">B</span></div>
+          <div class="role">FOMO int8 추론</div>
+          <ul>
+            <li>입력 96×96 RGB</li>
+            <li>MobileNetV2 0.35 · <span class="num">157~163ms</span></li>
+            <li>출력: <code>obstacle</code>·<code>person</code> 중심점+점수</li>
+            <li>점수 0.3 이상만 넘김</li>
+            <li><code>detector_stub</code> = 배선 시험용</li>
+          </ul>
+        </div>
+        <div class="card b">
+          <div class="ch"><h3>logic.cpp</h3><span class="badge">B</span><span class="path">Arduino 무관</span></div>
+          <div class="role">통로·사람·시간 창 판정</div>
+          <ul>
+            <li>점수 0.6 미만 제외</li>
+            <li>중심점이 통로 다각형 안</li>
+            <li>사람 16px 안은 보류</li>
+            <li>6프레임 중 4 → 점유, 1 이하 → 해제</li>
+            <li>점유 10초 → 경고</li>
+          </ul>
+          <div class="store">단계 <b>0 정상 · 1 관찰(1Hz) · 2 경고(5Hz)</b><br>수치는 <code>LogicConfig</code> 한 곳</div>
+        </div>
+      </div>
+      <div class="card c">
+        <div class="ch"><h3>uploader.cpp</h3><span class="badge">C</span><span class="path">태스크 · 코어 0</span></div>
+        <div class="role">이벤트를 큐에 두고 Supabase로 보냄</div>
+        <ul>
+          <li><code>EventQueue</code> 20칸, 가득 차면 가장 오래된 것부터 버림</li>
+          <li>HTTPS POST, 내장 CA 번들, 실패하면 간격을 늘려 재시도</li>
+          <li><code>net.cpp</code>: Wi-Fi 재연결 · NTP 시각 맞춘 뒤 SNTP 멈추고 업로드</li>
+          <li>heartbeat 60초마다</li>
+        </ul>
+      </div>
+    </section>
+
+    <div class="conn">
+      <div class="arrow"><b>HTTPS POST</b><span class="ln"></span>/rest/v1/<br>aisle_events</div>
+    </div>
+
+    <!-- Supabase -->
+    <section class="zone">
+      <div class="zt">Supabase · 도쿄 <span>db/</span></div>
+      <div class="card d">
+        <div class="ch"><h3>aisle_events</h3><span class="badge">D</span><span class="path">schema.sql</span></div>
+        <div class="role">이벤트 한 줄씩 저장</div>
+        <ul>
+          <li><code>event</code>: warning · cleared · heartbeat</li>
+          <li><code>started_at</code> · <code>ended_at</code> · <code>dwell_s</code></li>
+          <li><code>max_conf</code> · <code>fw_version</code> · <code>model_version</code></li>
+          <li><code>device_id</code> = aisle-cam-01</li>
+        </ul>
+        <div class="store"><b>RLS</b> — anon 키는 insert만. 읽기·수정·삭제 불가<br>중간 서버 없이 보드가 직접 넣음</div>
+      </div>
+      <div class="card d">
+        <div class="ch"><h3 class="k">조회 · 대시보드</h3><span class="badge">D</span></div>
+        <div class="role">기록을 사람이 보는 형태로</div>
+        <ul>
+          <li><code>queries.sql</code>: 시간대별 경고, 방치 시간, 장치 상태</li>
+          <li><code>aisle_event_reviews</code>: 사람이 단 확인 메모</li>
+          <li>대시보드 아티팩트 (DB 스냅숏)</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <div class="vlink"><i>↑</i> 모델은 Arduino 라이브러리로 펌웨어에 들어가고, CI는 push마다 같은 소스를 검사합니다</div>
+
+  <div class="build">
+    <section class="zone">
+      <div class="zt">Edge Impulse · 학습 <span>aisle-guard-v2 · 1155430</span></div>
+      <div class="card e">
+        <div class="ch"><h3 class="k">모델 만들기</h3><span class="badge">E</span><span class="path">ei1155430-d2</span></div>
+        <div class="role">라벨 → 학습 → Arduino 라이브러리</div>
+        <ul>
+          <li><code>autolabel.py</code>: 빈 통로와의 차이로 박스 초안</li>
+          <li><code>cam_label.py</code>: 보드 카메라 화면 369장에 박스 옮기기 (ECC 정렬)</li>
+          <li>영상 105장 + 보드 화면 369장, 라벨 <code>obstacle</code>·<code>person</code></li>
+          <li>검증 F1 <span class="num">0.87</span> · 정밀도 <span class="num">0.92</span></li>
+          <li>zip → <code>firmware/libraries/</code> (<code>build.ps1 -InstallLib</code>)</li>
+        </ul>
+      </div>
+    </section>
+    <section class="zone">
+      <div class="zt">GitHub Actions · CI <span>.github/workflows/ci.yml</span></div>
+      <div class="card f">
+        <div class="ch"><h3 class="k">push마다 세 가지 검사</h3><span class="badge">F</span></div>
+        <div class="role">판정 · 컴파일 · 모델 품질</div>
+        <ul>
+          <li><b>unit-test</b>: g++ <code>-Werror</code>로 <code>test_logic</code>·<code>test_proto</code></li>
+          <li><b>firmware-build</b>: arduino-cli, esp32 core 3.3.12, <code>secrets.example.h</code>로 컴파일</li>
+          <li><b>model-gate</b>: 펌웨어에 든 int8 모델을 LiteRT로 시험 프레임에 돌림</li>
+        </ul>
+        <div class="store">obstacle 재현율 <b>0.9 미만이면 실패</b> → 나빠진 모델은 못 들어감</div>
+      </div>
+    </section>
+  </div>
+
+</div>
+
+<aside class="side">
+  <div class="panel">
+    <h4>인터페이스 (경계)</h4>
+    <div class="if"><strong>I1 · PC → ESP32</strong><span>USB serial · AGFR 96×96 프레임 · #CAM #CAMAE #CAMMIRROR #VIEW</span></div>
+    <div class="if"><strong>I2 · ESP32 → PC</strong><span>F 줄: 단계·검출 수·추론 ms / V &lt;hex&gt;: 보드 화면</span></div>
+    <div class="if"><strong>I3 · ESP32 → Supabase</strong><span>POST /rest/v1/aisle_events · publishable 키 · Prefer: return=minimal</span></div>
+    <div class="if"><strong>I4 · Edge Impulse → 펌웨어</strong><span>Arduino 라이브러리 zip · MODEL_VERSION</span></div>
+    <div class="if"><strong>I5 · git push → CI</strong><span>unit-test · firmware-build · model-gate</span></div>
+    <p class="hint">비밀값은 secrets.h·.env (gitignore). 커밋은 secrets.example.h만.</p>
+  </div>
+  <div class="box">
+    <h4>실측 결과</h4>
+    <ul>
+      <li>추론 <span class="num">약 160ms</span> / 프레임</li>
+      <li>15초 방치 ×10 → 경고 <span class="num">10/10</span>, 9.7~10.2초</li>
+      <li>방치 시간 오차 <span class="num">0.0초</span> ×10</li>
+      <li>사람 지나감 <span class="num">0/10</span>, 5초만 둠 <span class="num">0/5</span>, 통로 밖 <span class="num">0/5</span></li>
+      <li>경고 중 Wi-Fi 끊김 → 기록 누락 <span class="num">0</span></li>
+      <li>카메라 시험 <span class="num">59/59</span>, 오검출 <span class="num">0/33</span></li>
+    </ul>
+  </div>
+  <div class="box legend">
+    <div><i style="background:var(--a)"></i>A — PC 입력·시연·검증</div>
+    <div><i style="background:var(--b)"></i>B — ESP32 추론·판정·LED</div>
+    <div><i style="background:var(--c)"></i>C — ESP32 전송·네트워크</div>
+    <div><i style="background:var(--d)"></i>D — Supabase 저장·조회</div>
+    <div><i style="background:var(--e)"></i>E — Edge Impulse 모델</div>
+    <div><i style="background:var(--f)"></i>F — GitHub Actions CI</div>
+  </div>
+</aside>
+</div>
+</div>
+
+<main class="doc">
+<section><h2>과제 조건</h2><div class="tw"><table>
+<tr><th>조건</th><th>구현</th><th>위치</th></tr>
+<tr><td>① ESP32에 모델 탑재</td><td>Edge Impulse FOMO(MobileNetV2 0.35, int8)를 Arduino 라이브러리로 탑재. 추론 157~163ms</td><td><code>firmware/aisle_cam/detector_ei.cpp</code></td></tr>
+<tr><td>② 로그 DB 저장</td><td>ESP32가 Supabase REST로 직접 insert(중간 서버 없음). RLS로 insert만 허용</td><td><code>uploader.cpp</code>, <code>db/</code></td></tr>
+<tr><td>③ CI</td><td>push마다 판정 로직 단위시험 + 펌웨어 컴파일 + 모델 품질 검사(obstacle 재현율 0.9 미만이면 실패)</td><td><code>.github/workflows/ci.yml</code></td></tr>
+</table></div></section>
+
+<div class="two">
+<section><h2>판정 로직 <code>logic.cpp</code></h2><p>모델은 프레임마다 물체의 중심점과 점수만 냅니다. 이것을 경고로 바꾸는 규칙입니다.</p><div class="tw"><table>
+<tr><th>단계</th><th>규칙</th><th>이유</th></tr>
+<tr><td>1. 점수 거르기</td><td>점수 0.6 미만 제외</td><td>흐린 화면의 약한 오검출 제거</td></tr>
+<tr><td>2. 통로 안인가</td><td>obstacle 중심점이 통로 다각형 안. 선반 위 상자는 제외</td><td>통로를 막는 물건만</td></tr>
+<tr><td>3. 사람 옆은 보류</td><td>person 중심 16px 안의 obstacle은 세지 않음</td><td>옷·가방 오인 대비</td></tr>
+<tr><td>4. 시간 창</td><td>최근 6프레임 중 4 이상이면 점유, 1 이하면 해제</td><td>한두 프레임 튀어도 안정</td></tr>
+<tr><td>5. 단계</td><td>0 정상 → 1 관찰(LED 1Hz) → 2 경고(점유 10초, LED 5Hz, warning 기록)</td><td>잠깐 둔 물건은 경고 안 함</td></tr>
+<tr><td>6. 해제</td><td>점유가 끝나면 cleared와 방치 시간 기록</td><td>DB에서 방치 시간 통계</td></tr>
+</table></div><p>모든 수치는 <code>LogicConfig</code> 한 곳에 있고, Arduino에 기대지 않아 PC와 CI에서 같은 단위시험을 돌립니다.</p></section>
+
+<section><h2>LED 경고</h2><div class="tw"><table>
+<tr><th>단계</th><th>언제</th><th>LED (GPIO 21)</th></tr>
+<tr><td>0 정상</td><td>점유 아님</td><td>꺼짐</td></tr>
+<tr><td>1 관찰</td><td>점유 시작 ~ 10초 전</td><td>1Hz (0.5초 켜짐 / 0.5초 꺼짐)</td></tr>
+<tr><td>2 경고</td><td>점유 10초 이상</td><td>5Hz (0.1초씩), warning 기록</td></tr>
+</table></div><p>예: 상자를 15초 두었다 치우면, 약 2초 뒤 점유가 시작되어 1Hz로 깜빡이고, 10초에 5Hz로 바뀌며 warning을 기록하고, 치우면 꺼지며 cleared(방치 약 15초)를 기록합니다.</p><p>판정과 LED는 보드 안에서만 돌기 때문에 Wi-Fi가 끊겨도 경고는 계속되고, DB 기록은 큐에 두었다가 다시 연결되면 보냅니다.</p></section>
+</div>
+
+<div class="two">
+<section><h2>모델</h2><div class="tw"><table>
+<tr><th>항목</th><th>값</th></tr>
+<tr><td>구조</td><td>입력 96×96 RGB, FOMO MobileNetV2 0.35, int8</td></tr>
+<tr><td>데이터</td><td>영상 프레임 105장 + 보드 카메라 화면 369장. 라벨 obstacle, person</td></tr>
+<tr><td>성능</td><td>검증 F1 0.87, 정밀도 0.92</td></tr>
+<tr><td>버전</td><td>ei1155430-d2. d1은 카메라 화면 재현율 0.44 → 보드 화면 추가 재학습 → 카메라 시험 59/59</td></tr>
+</table></div></section>
+
+<section><h2>검증 결과</h2><div class="tw"><table>
+<tr><th>시나리오</th><th>기준</th><th>결과</th></tr>
+<tr><td>물건 15초 두고 치움 ×10</td><td>9/10 이상 경고</td><td class="ok">10/10 · 9.7~10.2초</td></tr>
+<tr><td>그때의 방치 시간</td><td>실제와 ±1초</td><td class="ok">오차 0.0초 ×10</td></tr>
+<tr><td>사람이 지나감 ×10</td><td>경고 0</td><td class="ok">0/10</td></tr>
+<tr><td>물건 5초만 둠 ×5</td><td>경고 0</td><td class="ok">0/5</td></tr>
+<tr><td>물건 통로 밖 ×5</td><td>경고 0</td><td class="ok">0/5</td></tr>
+<tr><td>경고 중 Wi-Fi 끊김</td><td>기록 누락 0</td><td class="ok">누락 0</td></tr>
+<tr><td>시연 영상(USB·카메라)</td><td>경고 12초 이내, ±1초, 오경보 0</td><td class="ok">PASS · 10.2~10.7초</td></tr>
+</table></div></section>
+</div>
+
+<section><h2>정확도를 높인 과정</h2><div class="tw"><table>
+<tr><th>문제</th><th>원인 찾기</th><th>개선</th><th>결과</th></tr>
+<tr><td>라벨을 손으로 붙일 시간 부족</td><td>카메라 고정 → 빈 통로와 다른 부분이 곧 물체</td><td><code>autolabel.py</code>로 박스 초안 → 150장 시트로 눈 확인</td><td>USB 시험 obstacle 27/27</td></tr>
+<tr><td>카메라 모드 재현율 0.44</td><td>흐림·밝기·기울기를 PC에서 시험 → 검은 테와 기울어짐이 문제</td><td><code>#CAMCROP</code>으로 꽉 차게, "board sees"로 조준</td><td>검은 테 없이 촬영</td></tr>
+<tr><td>화면이 하얗게 날아가 검출 0</td><td>저장한 보드 화면 확인</td><td>노출 조절 <code>#CAMAE</code></td><td>검출 회복</td></tr>
+<tr><td>좌우 반전</td><td>보드 화면과 영상 비교</td><td><code>#CAMMIRROR</code></td><td>같은 방향</td></tr>
+<tr><td>재촬영 시 점수 흔들림(0.3~0.9)</td><td>학습 데이터가 깨끗한 영상뿐</td><td>보드가 찍은 화면 369장 추가, ECC 정렬로 라벨 옮김</td><td>d2: 59/59, 오검출 0/33</td></tr>
+<tr><td>방치 시간 매번 +1.0초</td><td>내려놓고 들고 가는 순간까지 물건으로 인식</td><td>d2 재학습</td><td>오차 0.0초 ×10</td></tr>
+<tr><td>시연 중 재부팅</td><td>백트레이스: SNTP와 업로드 충돌</td><td>시각을 맞추면 SNTP 멈춘 뒤 업로드</td><td>재부팅 0</td></tr>
+</table></div></section>
+
+<section><h2>실행</h2>
+<pre>powershell -File firmware/tests/run_tests.ps1        # 판정 로직 단위시험
+powershell -File firmware/build.ps1 -Port COM10      # 컴파일 + 업로드
+python tools/feed.py COM10 videos/demo.mp4           # USB 모드 시연
+python tools/screen.py COM10 videos/demo.mp4         # 카메라 모드 시연 (camera_demo.bat)
+python tools/verify.py tools/logs/feed_&lt;시각&gt;.log    # 성공 기준 계산</pre>
+<p>DB는 <code>db/schema.sql</code>을 Supabase에서 한 번 실행하고, 비밀값은 <code>firmware/aisle_cam/secrets.h</code>(<code>secrets.example.h</code> 복사)에 넣습니다. 조회 SQL은 <code>db/queries.sql</code>.</p></section>
+</main>
+</body>
+</html>

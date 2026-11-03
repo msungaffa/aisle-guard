@@ -164,3 +164,6 @@
 - PRD 검증 계획 표 결과 칸 1·2행에 d2 보드 결과(경고 10/10 같음, 방치 오차 0.0초)를, 표 아래 d2 문단에 USB 시연·카메라 모드·최종 녹화 PASS를 덧붙임. README 검증 표 1·2행도 같이.
 - README 검증 절에 d2 보드 재확인·최종 녹화 결과 문단 추가.
 - 점검: GitHub 저장소가 PRIVATE — 제출 링크가 열리려면 공개 전환 또는 평가자 초대 필요(사용자 결정). CI는 16:05 시점 최근 완료 run 초록, 나머지 진행 중.
+
+## 2026-11-03 docs/index.html (16:30)
+- 아키텍처 아티팩트(https://claude.ai/artifact/LAxHS5yaK8CkYDbmRxHe5m)와 README의 과제 조건·판정 로직·LED·모델·검증·정확도 과정·실행을 한 HTML로 묶어 `docs/index.html`에 둠. 외부 의존은 Google Fonts뿐, 다크 모드·폰 폭 대응. README 상단에 링크.
