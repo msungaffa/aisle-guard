@@ -3,6 +3,7 @@
 
 사용:
   python tools/feed.py COM10 videos/demo.mp4                 # 2fps로 재생
+  python tools/feed.py COM10 videos/demo.mp4 --show          # 영상 창 + 보드 판정 표시 (시연 녹화용, q로 종료)
   python tools/feed.py COM10 videos/C1.mp4 --fps 3 --loop
   python tools/feed.py COM10 --synthetic 40 --cmd "#FAKE 48 48 0.9" --cmd-at "15:#FAKE off"  # 영상 없이 배선 시험
   python tools/feed.py COM10 videos/demo.mp4 --cmd "#AISLE 20 10 76 10 90 96 6 96"
@@ -12,7 +13,9 @@
 """
 import argparse
 import datetime
+import json
 import os
+import re
 import struct
 import sys
 import threading
@@ -22,10 +25,15 @@ import numpy as np
 import serial
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from aisle_frames import MODEL_SIZE, load_crop, to_model_rgb  # noqa: E402
+from aisle_frames import CONFIG, MODEL_SIZE, load_crop, to_model_rgb  # noqa: E402
 
 FRAME_BYTES = MODEL_SIZE * MODEL_SIZE * 3
 ready = threading.Event()
+# 보드 출력에서 읽은 최근 상태 (--show 화면에 쓴다)
+status = {"lvl": 0, "obs": 0, "per": 0, "inf": 0, "event": "", "event_t": 0.0}
+F_LINE = re.compile(r"F v=\d+ obs=(\d+) per=(\d+) st=\S lvl=(\d+) conf=[\d.]+ inf=(\d+)ms")
+LEVEL_TEXT = {0: ("CLEAR", (60, 180, 60)), 1: ("OBJECT IN AISLE", (0, 200, 255)),
+              2: ("WARNING: OBSTACLE", (0, 0, 255))}
 
 
 def packet(video_ms, rgb):
@@ -53,11 +61,17 @@ def reader(ser, log, stop, t0):
             print(line, flush=True)
             if text.startswith("[cfg] aisle"):
                 ready.set()
+            m = F_LINE.search(text)
+            if m:
+                status.update(obs=int(m[1]), per=int(m[2]), lvl=int(m[3]), inf=int(m[4]))
+            elif text.startswith("OBSTACLE"):
+                status.update(event=text.split(" max_conf")[0], event_t=time.time())
             log.write(line + "\n")
             log.flush()
 
 
-def frames_from_video(path, fps, crop, loop):
+def frames_from_video(path, fps, crop, loop, every=False):
+    """(영상 ms, 원본 BGR, 보낼지). every=True면 화면용으로 모든 프레임을 내고, 보낼 프레임만 표시한다"""
     import cv2
     while True:
         cap = cv2.VideoCapture(path)
@@ -73,10 +87,11 @@ def frames_from_video(path, fps, crop, loop):
                 break
             t_ms = idx * 1000.0 / src_fps
             idx += 1
-            if t_ms + 1e-6 < next_ms:
-                continue
-            next_ms += step_ms
-            yield int(t_ms), to_model_rgb(frame, crop)
+            send = t_ms + 1e-6 >= next_ms
+            if send:
+                next_ms += step_ms
+            if send or every:
+                yield int(t_ms), frame, send
         cap.release()
         if not loop:
             return
@@ -85,7 +100,52 @@ def frames_from_video(path, fps, crop, loop):
 def frames_synthetic(n, fps):
     gray = np.full((MODEL_SIZE, MODEL_SIZE, 3), 128, dtype=np.uint8)
     for i in range(n):
-        yield int(i * 1000 / fps), gray
+        yield int(i * 1000 / fps), gray, True
+
+
+def show(frame, video_ms, crop, poly):
+    """영상 위에 통로 영역과 보드 판정을 그린다. q를 누르면 False"""
+    import cv2
+    img = frame.copy()
+    text, color = LEVEL_TEXT.get(status["lvl"], LEVEL_TEXT[2])
+    if crop:
+        x, y, w, h = crop
+        cv2.rectangle(img, (x, y), (x + w, y + h), (200, 200, 200), 1)
+    if poly is not None:
+        cv2.polylines(img, [poly], True, color, 3)
+    H, W = img.shape[:2]
+    cv2.rectangle(img, (0, H - 70), (W, H), (0, 0, 0), -1)
+    cv2.putText(img, f"ESP32: {text}", (12, H - 38), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
+    cv2.putText(img, f"video {video_ms / 1000:5.1f}s   obstacle={status['obs']} person={status['per']}   "
+                f"inference {status['inf']}ms", (12, H - 12), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (230, 230, 230), 1)
+    if status["event"] and time.time() - status["event_t"] < 4:
+        cv2.putText(img, status["event"], (12, H - 90), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
+    # conda의 opencv는 headless라 imshow가 없다 → tkinter 창에 그린다
+    return viewer.draw(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+
+
+class Viewer:
+    def __init__(self):
+        self.root = None
+        self.alive = True
+
+    def draw(self, rgb):
+        import tkinter as tk
+        from PIL import Image, ImageTk
+        if self.root is None:
+            self.root = tk.Tk()
+            self.root.title("aisle-guard feed (q: quit)")
+            self.label = tk.Label(self.root)
+            self.label.pack()
+            self.root.bind("q", lambda e: setattr(self, "alive", False))
+            self.root.protocol("WM_DELETE_WINDOW", lambda: setattr(self, "alive", False))
+        self.photo = ImageTk.PhotoImage(Image.fromarray(rgb))
+        self.label.configure(image=self.photo)
+        self.root.update()
+        return self.alive
+
+
+viewer = Viewer()
 
 
 def main():
@@ -98,6 +158,7 @@ def main():
     ap.add_argument("--cmd", action="append", default=[], help="시작 전에 보낼 보드 명령 (여러 번 가능)")
     ap.add_argument("--cmd-at", action="append", default=[], help='"초:명령" 영상 시각에 보낼 명령 (예: "13:#FAKE off")')
     ap.add_argument("--after", type=float, default=3.0, help="끝난 뒤 보드 출력을 더 받을 초")
+    ap.add_argument("--show", action="store_true", help="영상 창에 보드 판정을 겹쳐 보여 준다 (q로 종료)")
     ap.add_argument("--log", default=None, help="로그 파일 (기본 tools/logs/feed_<시각>.log)")
     args = ap.parse_args()
     if not args.video and not args.synthetic:
@@ -135,11 +196,17 @@ def main():
 
     crop = load_crop()
     src = frames_synthetic(args.synthetic, args.fps) if args.synthetic else \
-        frames_from_video(args.video, args.fps, crop, args.loop)
+        frames_from_video(args.video, args.fps, crop, args.loop, every=args.show)
+    poly = None
+    if args.show and crop:
+        aisle = json.load(open(CONFIG, encoding="utf-8")).get("aisle_96", [])
+        x, y, w, h = crop
+        poly = np.array([[x + aisle[i] * w / MODEL_SIZE, y + aisle[i + 1] * h / MODEL_SIZE]
+                         for i in range(0, len(aisle) - 1, 2)], dtype=np.int32)
     sent = 0
     start = time.time()
     try:
-        for video_ms, rgb in src:
+        for video_ms, frame, send in src:
             # 영상 시각에 맞춰 보낸다 (늦으면 바로)
             wait = start + video_ms / 1000.0 - time.time()
             if wait > 0:
@@ -147,9 +214,13 @@ def main():
             while timed and timed[0][0] * 1000 <= video_ms:
                 # 앞의 \n은 보드의 명령 줄 버퍼를 비운다
                 ser.write(("\n" + timed.pop(0)[1] + "\n").encode())
-            ser.write(packet(video_ms, rgb))
-            sent += 1
-            log.write(f"{time.time() - t0:8.2f} >> frame v={video_ms}\n")
+            if send:
+                rgb = frame if args.synthetic else to_model_rgb(frame, crop)
+                ser.write(packet(video_ms, rgb))
+                sent += 1
+                log.write(f"{time.time() - t0:8.2f} >> frame v={video_ms}\n")
+            if args.show and not args.synthetic and not show(frame, video_ms, crop, poly):
+                break
     except KeyboardInterrupt:
         pass
     finally:
