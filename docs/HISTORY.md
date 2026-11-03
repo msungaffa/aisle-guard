@@ -132,3 +132,8 @@
 ## 2026-11-03 ③ 문서 반영 (15:30)
 - README: 모델 절을 d2로(데이터에 보드 카메라 화면 369장, 검증 F1 0.87, model-gate USB·카메라 d1→d2, simulate 방치 +0.0초), 구성도에 카메라 시연 경로, "USB 모드 = 정량, 카메라 모드 = 시연" 설명, 카메라 명령·`screen.py` 실행법, 카메라 모드 6·7회차 결과, 한계(카메라는 화면 재촬영 시연만, person 박스 어긋남).
 - 검증 표의 보드 수치는 d1 그대로 두고 d1 기준이라고 밝힘. ②의 d2 보드 재확인 결과가 오면 행을 더한다.
+
+## 2026-11-03 ③ 보안·코드 검토 (15:35)
+- security-review (저장소 전체, `firmware/libraries/` 제외): 높은 확신의 취약점 **없음**. 확인한 것: 모든 커밋 이력에 비밀값 없음(`secrets.h`·`.env`는 한 번도 커밋 안 됨, example은 자리표시만), RLS는 anon insert만(select·update·delete 불가), TLS는 내장 CA 묶음으로 인증서 검사(`setInsecure` 없음), 시리얼 명령·프레임 파서는 길이 검사로 넘침 없음, 파이썬 도구에 pickle·eval·shell=True 없음, CI는 외부 입력을 `run:`에 넣지 않음. 알려진 한계(펌웨어의 anon 키로 가짜 행 insert 가능)는 README 한계에 이미 있음.
+- code-review (low): 지적 없음. 단 diff가 커서 `logic.cpp`·`ci.yml` 위주로만 봄.
+- **①·②(펌웨어 담당)에게, 선택·제출 후 가능:** `logic.cpp`의 `logic_max_conf`는 `conf_min`·사람 옆 보류를 적용하지 않아, DB `max_conf`가 판정에 쓰인 검출보다 높게 기록될 수 있다. 경고 판정에는 영향 없음. 지금 고치면 단위시험·보드 재측정이 필요하니 16:00 전에는 손대지 않는 것을 권함.
