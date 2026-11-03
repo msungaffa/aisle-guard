@@ -116,12 +116,21 @@ def main():
         cmd("#CAM on")  # 판정 초기화, v=0
         log.write(f"{time.time() - t0:8.2f} >> play start\n")
         start = time.time()
+        # 보드가 본 화면을 5초마다 저장한다 (카메라가 화면을 제대로 봤는지 나중에 확인)
+        view_dir = os.path.splitext(log_path)[0] + "_views"
+        os.makedirs(view_dir, exist_ok=True)
+        next_save = 0.0
         while viewer.alive:
             t = time.time() - start
             i = int(t * fps)
             if i >= len(frames):
                 break
             viewer.draw(cv2.cvtColor(compose(frames[i], args.size, t, True), cv2.COLOR_BGR2RGB))
+            view = feed.status.get("view")
+            if view is not None and t >= next_save:
+                next_save += 5
+                cv2.imencode(".png", cv2.cvtColor(view, cv2.COLOR_RGB2BGR))[1].tofile(
+                    os.path.join(view_dir, f"v{int(t):03d}.png"))
         time.sleep(3)
     finally:
         try:
