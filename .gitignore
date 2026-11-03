@@ -6,3 +6,4 @@ tools/captures/
 firmware/tests/build/
 *.zip
 __pycache__/
+videos/
