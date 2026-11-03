@@ -56,6 +56,13 @@ def reader(ser, log, stop, t0):
         while b"\n" in buf:
             raw, buf = buf.split(b"\n", 1)
             text = raw.decode("utf-8", "replace").rstrip("\r")
+            if text.startswith("V "):  # 카메라 모드에서 보드가 본 96×96 (screen.py 조준용), 로그에는 안 남김
+                try:
+                    status["view"] = np.frombuffer(bytes.fromhex(text[2:]), dtype=np.uint8).reshape(
+                        MODEL_SIZE, MODEL_SIZE, 3)
+                except ValueError:
+                    pass
+                continue
             stamp = f"{time.time() - t0:8.2f}"
             line = f"{stamp} {text}"
             print(line, flush=True)
@@ -128,6 +135,7 @@ class Viewer:
     def __init__(self):
         self.root = None
         self.alive = True
+        self.space = False
 
     def draw(self, rgb):
         import tkinter as tk
@@ -138,6 +146,7 @@ class Viewer:
             self.label = tk.Label(self.root)
             self.label.pack()
             self.root.bind("q", lambda e: setattr(self, "alive", False))
+            self.root.bind("<space>", lambda e: setattr(self, "space", True))
             self.root.protocol("WM_DELETE_WINDOW", lambda: setattr(self, "alive", False))
         self.photo = ImageTk.PhotoImage(Image.fromarray(rgb))
         self.label.configure(image=self.photo)

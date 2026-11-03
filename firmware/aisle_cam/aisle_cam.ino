@@ -3,11 +3,15 @@
 //   #AISLE x1 y1 x2 y2 x3 y3 ...   통로 다각형(96×96 좌표, 3~8점). 보드에 저장된다
 //   #AISLE?                         지금 통로 출력
 //   #FAKE x y conf | #FAKE off      스텁 검출기에 가짜 obstacle (모델 없이 배선 시험)
+//   #CAM on | #CAM off              카메라 모드: 보드 카메라로 2fps 촬영해 같은 검출·판정 (v는 #CAM on부터 ms)
+//   #CAMCROP x y side               카메라에서 잘라낼 정사각형 (QVGA 320×240 좌표, 기본 40 0 240)
+//   #VIEW on | #VIEW off            카메라 모드에서 보드가 본 96×96을 "V <hex>" 줄로 보낸다 (조준용, tools/screen.py)
 #include <Arduino.h>
 #include <Preferences.h>
 #include <esp_heap_caps.h>
 #include <time.h>
 
+#include "camera.h"
 #include "detector.h"
 #include "logic.h"
 #include "net.h"
@@ -27,6 +31,10 @@ static uint32_t frames = 0;
 
 Detection g_fake = {LABEL_OBSTACLE, 48, 48, 0.9f};
 bool g_fake_on = false;
+
+static bool cam_ready = false, cam_on = false, view_on = false;
+static uint32_t cam_t0 = 0, cam_next = 0;
+static const uint32_t CAM_PERIOD_MS = 500;  // feed.py 기본 2fps와 같게
 
 static void set_default_aisle() {
   float xs[] = {0, 96, 96, 0}, ys[] = {0, 0, 96, 96};
@@ -76,6 +84,28 @@ static void handle_command(char *s) {
     print_aisle();
     return;
   }
+  if (strcmp(s, "#CAM on") == 0) {
+    if (!cam_ready) cam_ready = camera_begin();
+    if (!cam_ready) { Serial.println("[cam] not available"); return; }
+    cam_on = true;
+    cam_t0 = cam_next = millis();
+    delete logic_;  // 새 시연을 처음 상태에서 시작
+    logic_ = new AisleLogic(cfg);
+    int x, y, side;
+    camera_get_crop(&x, &y, &side);
+    Serial.printf("[cam] on crop=%d,%d,%d\n", x, y, side);
+    return;
+  }
+  if (strcmp(s, "#CAM off") == 0) { cam_on = false; Serial.println("[cam] off"); return; }
+  if (strncmp(s, "#CAMCROP ", 9) == 0) {
+    int x, y, side;
+    if (sscanf(s + 9, "%d %d %d", &x, &y, &side) == 3) camera_set_crop(x, y, side);
+    camera_get_crop(&x, &y, &side);
+    Serial.printf("[cam] crop=%d,%d,%d\n", x, y, side);
+    return;
+  }
+  if (strcmp(s, "#VIEW on") == 0) { view_on = true; Serial.println("[cam] view on"); return; }
+  if (strcmp(s, "#VIEW off") == 0) { view_on = false; Serial.println("[cam] view off"); return; }
   if (strcmp(s, "#FAKE off") == 0) { g_fake_on = false; Serial.println("[cfg] fake off"); return; }
   if (strncmp(s, "#FAKE ", 6) == 0) {
     float x, y, c;
@@ -144,6 +174,24 @@ static void on_frame(uint32_t video_ms) {
   }
 }
 
+// 보드가 본 96×96 RGB를 한 줄 hex로 (PC 조준 화면용)
+static void send_view() {
+  static const char hex[] = "0123456789abcdef";
+  char buf[512];
+  size_t n = 0;
+  Serial.print("V ");
+  for (size_t i = 0; i < PROTO_FRAME_BYTES; i++) {
+    buf[n++] = hex[frame_buf[i] >> 4];
+    buf[n++] = hex[frame_buf[i] & 15];
+    if (n == sizeof buf) {
+      Serial.write((const uint8_t *)buf, n);
+      n = 0;
+    }
+  }
+  if (n) Serial.write((const uint8_t *)buf, n);
+  Serial.println();
+}
+
 static void led_loop() {
   int lvl = logic_->level();
   bool on = false;
@@ -192,6 +240,16 @@ void loop() {
       line[line_n++] = (char)b;
     } else {
       line_n = 0;
+    }
+  }
+  if (cam_on && (int32_t)(millis() - cam_next) >= 0) {
+    cam_next += CAM_PERIOD_MS;
+    if ((int32_t)(millis() - cam_next) > 0) cam_next = millis() + CAM_PERIOD_MS;  // 밀리면 따라잡지 않는다
+    if (camera_grab96(frame_buf)) {
+      if (view_on) send_view();
+      on_frame(millis() - cam_t0);
+    } else {
+      Serial.println("[cam] grab failed");
     }
   }
   net_loop();
