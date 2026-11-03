@@ -28,8 +28,8 @@ from aisle_frames import CONFIG, crop_square, load_crop  # noqa: E402
 
 PANEL_W = 340
 CROP = None
-# 카메라 모드 판정 영역: 손에 들고 찍어 흔들려도 선반이 덜 들어오게 노란 선 바로 바깥까지로 좁힌다 (96 좌표)
-CAM_AISLE = "40 0 55 0 86 96 6 96"
+# 카메라 모드 판정 영역: 기본은 USB 검증과 같은 aisle.json 값 (좁히면 가장자리 물건을 놓친다는 사용자 피드백)
+CAM_AISLE = None
 AISLE_PTS = None
 
 
@@ -66,7 +66,7 @@ def main():
     ap.add_argument("port")
     ap.add_argument("video")
     ap.add_argument("--size", type=int, default=640, help="영상 칸 한 변 픽셀")
-    ap.add_argument("--aisle", default=CAM_AISLE, help="카메라 모드 판정 영역 (96 좌표, 끝나면 aisle.json 값으로 되돌림)")
+    ap.add_argument("--aisle", default=CAM_AISLE, help="카메라 모드 판정 영역 (96 좌표, 기본 aisle.json, 끝나면 aisle.json 값으로 되돌림)")
     ap.add_argument("--camcrop", default=None, help='보드 카메라 자르기 "x y side" (QVGA 좌표)')
     ap.add_argument("--conf", type=float, default=0.4,
                     help="카메라 모드 판정 점수 기준 (화면 재촬영이라 점수가 낮게 흔들림, 끝나면 0.6으로 되돌림)")
@@ -114,6 +114,8 @@ def main():
         time.sleep(0.2)
 
     global AISLE_PTS
+    if not args.aisle:
+        args.aisle = " ".join(str(a) for a in json.load(open(CONFIG, encoding="utf-8"))["aisle_96"])
     v = [float(t) for t in args.aisle.split()]
     AISLE_PTS = (np.array(v, dtype=np.float32).reshape(-1, 2) * 3).astype(np.int32)  # 288/96
     cmd("#AISLE " + args.aisle)
@@ -145,10 +147,10 @@ def main():
         cmd("#CAM on")  # 판정 초기화, v=0
         log.write(f"{time.time() - t0:8.2f} >> play start\n")
         start = time.time()
-        # 보드가 본 화면을 5초마다 저장한다 (카메라가 화면을 제대로 봤는지 나중에 확인)
+        # 보드가 본 화면을 새로 올 때마다 저장한다 (카메라가 화면을 제대로 봤는지 확인, 카메라 재학습 데이터 후보)
         view_dir = os.path.splitext(log_path)[0] + "_views"
         os.makedirs(view_dir, exist_ok=True)
-        next_save = 0.0
+        last_view = None
         while viewer.alive:
             t = time.time() - start
             i = int(t * fps)
@@ -156,10 +158,10 @@ def main():
                 break
             viewer.draw(cv2.cvtColor(compose(frames[i], args.size, t, True), cv2.COLOR_BGR2RGB))
             view = feed.status.get("view")
-            if view is not None and t >= next_save:
-                next_save += 5
+            if view is not None and view is not last_view:
+                last_view = view
                 cv2.imencode(".png", cv2.cvtColor(view, cv2.COLOR_RGB2BGR))[1].tofile(
-                    os.path.join(view_dir, f"v{int(t):03d}.png"))
+                    os.path.join(view_dir, f"v{int(t * 1000):06d}.png"))
         time.sleep(3)
     finally:
         try:
