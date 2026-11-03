@@ -33,12 +33,13 @@
 - 15:23: 모델 `ei1155430-d2`(보드 카메라 화면 369장 추가 재학습, 검증 F1 0.87, arena 320000). PC: 카메라 시험 59/59, USB 27/27·오검출 0/18, simulate 방치 +0.0초. 보드 재확인은 ②.
 
 ## 남은 일
-- [ ] ② d2 보드 재확인: USB 시연·시나리오 1 회귀, 카메라 모드 1회(conf_min 0.6 가능?), `inf=` → 결과가 오면 ③이 README 검증 표에 d2 행 추가
-- [ ] ② 시연 녹화(카메라 모드 `screen.py` 또는 `feed.py --show` + 보드 LED 촬영, 사용자)
-- [ ] ③ 15:30 security-review, code-review(low)
+- [x] ② d2 보드 재확인(15:33): USB 시나리오 1 dwell 오차 0.0초 ×10, 시연 PASS, 카메라 모드 conf 0.6으로 PASS, 추론 157~163ms. SNTP·업로드 경합 재부팅 수정. → README 검증 표에 d2 행 추가(③, 아직이면)
+- [x] ② 최종 시연 녹화(15:41, d2 카메라 모드) verify PASS, 로그 `tools/logs/final_record.log`
+- [x] ③ security-review(취약점 없음), code-review(15:50, 지적은 아래 "제출 후")
+- [x] Supabase 시험 행 `setup-test`(id 1) 삭제(15:45, 사용자)
 - [ ] ③ 16:00 대시보드 DB 다시 받기, 제출물 점검(저장소 링크, CI 초록, 시연 영상)
 - [ ] 제출 (16:30, 사용자)
-- [ ] Supabase 시험 행 `device_id='setup-test'`(id 1) 지우기 — 자동 삭제가 확인 창에서 취소됨. 조회·대시보드는 이 행을 뺀다
+- [ ] 제출 후(선택): 코드 리뷰 지적 고치기 — 상세는 `docs/HISTORY.md` "③ 코드 리뷰 (medium, 15:50)". heartbeat가 경고 큐를 밀어냄, `#AISLE`·`#CAM on`·`#CONF` 때 경고 중이면 cleared 누락, NTP 재시도 없음, 재전송 중복 행, 해제 때 시간 창 안 비움, `logic_max_conf`, `model_gate.py --thr`를 0.6으로(①). 고칠 때는 단위시험 먼저.
 - [ ] 제출 후: EI 옛 프로젝트 `aisle-guard`(1155404) 지우기(선택), 보드에 PPE 펌웨어 다시 올리기
 
 ## 교훈
