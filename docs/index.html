@@ -204,6 +204,7 @@
     .ar-if div { background: rgba(255,255,255,0.07); border-radius: 9px; padding: 8px 10px; display: grid; }
     .ar-if strong { font-size: 12px; }
     .ar-if span { color: #9FB0CC; font-size: 11px; font-family: var(--mono); overflow-wrap: anywhere; }
+    .swipe { display: none; margin-top: 10px; font-size: 0.82rem; color: var(--muted); }
     .legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 0.85rem; color: var(--muted); margin-top: 16px; }
     .legend span { display: inline-flex; align-items: center; gap: 7px; }
     .legend i { width: 11px; height: 11px; border-radius: 3px; }
@@ -223,6 +224,7 @@
 
     /* ----- 하드웨어 ----- */
     .hw { margin-top: 40px; display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 28px; align-items: start; }
+    .hw > *, .demo > *, .hero > * { min-width: 0; }
     .board-pic { background: var(--dark); border-radius: 20px; padding: 26px; color: #E6ECF7; }
     .board-pic .role { font-size: 0.78rem; font-weight: 800; letter-spacing: 0.1em; color: #6CC4F0; }
     .board-pic h3 { margin: 6px 0 2px; font-size: 1.5rem; color: #fff; }
@@ -322,6 +324,7 @@
       .stats .num { font-size: 1.7rem; }
       .screen { grid-template-columns: 1fr; }
       .keys li { grid-template-columns: 1fr; gap: 2px; }
+      .swipe { display: block; }
     }
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
@@ -493,6 +496,7 @@
       <span class="eyebrow">Architecture</span>
       <h2>모델과 판정은 보드 안,<br>밖으로는 기록만 나갑니다</h2>
       <p class="lead">PC는 영상을 넣고 결과를 검증하는 역할만 합니다. 학습은 Edge Impulse, 저장은 Supabase, 품질 게이트는 GitHub Actions가 맡습니다.</p>
+      <p class="swipe">← 그림을 옆으로 밀어서 보세요 →</p>
       <div class="arch-scroll">
       <div class="arch">
         <div class="ar-flow">
