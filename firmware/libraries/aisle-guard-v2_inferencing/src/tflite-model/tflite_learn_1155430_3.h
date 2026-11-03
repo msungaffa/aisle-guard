@@ -33,7 +33,7 @@
 #define _EI_CLASSIFIER_TFLITE_LEARN_1155430_3_H_
 
 #define EI_CLASSIFIER_TFLITE_LEARN_1155430_3_ARENA_SIZE     185036
-const size_t tflite_learn_1155430_3_arena_size = 185036;
+const size_t tflite_learn_1155430_3_arena_size = 320000;
 
 #if defined __GNUC__
 #define ALIGN(X) __attribute__((aligned(X)))
