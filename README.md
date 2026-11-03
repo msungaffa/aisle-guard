@@ -7,6 +7,7 @@ XIAO ESP32S3 Sense 안에서 Edge Impulse FOMO 모델이 통로에 놓인 물건
 사람은 장애물로 세지 않는다.
 
 - PRD: https://claude.ai/artifact/7vguen5tdMA9Pb4VUPn3XW
+- 대시보드(DB 이벤트 스냅숏): https://claude.ai/artifact/Y96SJDB35Cw7M9EcPwVKvg
 - 과제 조건: ① ESP32에 모델 탑재 ② 로그 DB 저장 ③ CI → 아래 "조건별 구현"
 - 작업 문서: `CLAUDE.md`(규칙), `HANDOFF.md`(현재 상태·남은 일), `docs/HISTORY.md`(날짜별 기록)
 

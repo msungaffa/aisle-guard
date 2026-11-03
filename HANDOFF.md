@@ -27,17 +27,19 @@
 
 ## 현재 상태
 - 2026-11-03 11:30: 영상 없이 할 수 있는 것 완료. 판정 로직·프레임 수신·Supabase 전송을 모델 없이(`#FAKE`) 보드에서 확인: 경고 10.0초, 해제 방치 14.5초(실제 15초), DB 201. 단위시험 ALL PASS, 컴파일 OK, CI 추가.
+- 11:40: 창 3개로 나눠 작업 중(`docs/plan-today.md`). 영상·crop·시연 영상·시나리오 영상 준비 끝, 시연 영상 `#FAKE` 리허설 PASS. 모델은 자동 라벨·EI 업로드 단계.
+- ③ 문서: `db/queries.sql`(품질 지표 6개, 실제 DB에서 확인), 오경보 표시 표 `aisle_event_reviews` 적용(사용자가 SQL 편집기에서 실행), README 정리, 대시보드 https://claude.ai/artifact/Y96SJDB35Cw7M9EcPwVKvg (DB 행 스냅숏, 실측 뒤 다시 받음).
 - 보드에는 `aisle_cam`(스텁 검출기)이 올라가 있다.
 
 ## 남은 일
-- [ ] 사용자: `videos/`에 `ref.png`, `C1.mp4`~`C5.mp4` 넣기
-- [ ] `tools/aisle.json` crop 정하기(통로 부분 정사각형) → `extract_frames.py videos --fps 3` → `ei_upload.py tools/frames`
-- [ ] EI: 라벨(AI labeling 후 선반 상자 지우기) → impulse 96×96 RGB + FOMO 0.35 → 학습(F1 확인) → Arduino zip → `build.ps1 -InstallLib`
-- [ ] 모델 빌드: `settings.h` `DETECTOR_EI 1`, `MODEL_VERSION`. CI용으로 EI 라이브러리를 `firmware/libraries/`에 커밋(Public 프로젝트 산출물)
-- [ ] 보드에서 `#AISLE ...`로 통로 다각형 설정, 추론 시간 확인(목표 500ms 이하)
-- [ ] `tools/demo.json` 작성(구간·정답 시각) → `make_demo.py` → `feed.py` → `verify.py` → README 검증 표·PRD 결과 칸 채우기
-- [ ] 시연 영상 촬영, 제출 (16:30)
-- [ ] Supabase 시험 행 `device_id='setup-test'`(id 1) 지우기 — 자동 삭제가 확인 창에서 취소됨
+- [ ] ① EI: 라벨 확인 → impulse 96×96 RGB + FOMO 0.35 → 학습(F1 확인) → Arduino zip → `build.ps1 -InstallLib`
+- [ ] ① 모델 빌드: `settings.h` `DETECTOR_EI 1`, `MODEL_VERSION`. CI용으로 EI 라이브러리를 `firmware/libraries/`에 커밋(Public 프로젝트 산출물)
+- [ ] ② 보드에서 `#AISLE ...`로 통로 다각형 설정, 추론 시간 확인(목표 500ms 이하)
+- [ ] ② 모델로 `feed.py` → `verify.py`, PRD 시나리오 1~6 실측 → HISTORY
+- [ ] ③ 15:30 security-review, code-review(low)
+- [ ] ③ 16:00 실측 결과를 README 검증 표·PRD 결과 칸·대시보드(DB 다시 받기)에 반영
+- [ ] 시연 영상 촬영, 제출 (16:30, 사용자)
+- [ ] Supabase 시험 행 `device_id='setup-test'`(id 1) 지우기 — 자동 삭제가 확인 창에서 취소됨. 조회·대시보드는 이 행을 뺀다
 - [ ] 제출 후: 보드에 PPE 펌웨어 다시 올리기
 
 ## 교훈
