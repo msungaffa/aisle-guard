@@ -26,23 +26,21 @@
 - 라벨: `obstacle`(통로 바닥의 상자·가방만), `person`. **선반 위 상자는 라벨을 달지 않는다.**
 
 ## 현재 상태
-- 2026-11-03 11:30: 영상 없이 할 수 있는 것 완료. 판정 로직·프레임 수신·Supabase 전송을 모델 없이(`#FAKE`) 보드에서 확인: 경고 10.0초, 해제 방치 14.5초(실제 15초), DB 201. 단위시험 ALL PASS, 컴파일 OK, CI 추가.
-- 11:40: 창 3개로 나눠 작업 중(`docs/plan-today.md`). 영상·crop·시연 영상·시나리오 영상 준비 끝, 시연 영상 `#FAKE` 리허설 PASS. 모델은 자동 라벨·EI 업로드 단계.
-- ③ 문서: `db/queries.sql`(품질 지표 6개, 실제 DB에서 확인), 오경보 표시 표 `aisle_event_reviews` 적용(사용자가 SQL 편집기에서 실행), README 정리, 대시보드 https://claude.ai/artifact/Y96SJDB35Cw7M9EcPwVKvg (DB 행 스냅숏, 실측 뒤 다시 받음).
-- 보드에는 `aisle_cam`(스텁 검출기)이 올라가 있다.
+- 2026-11-03 11:30: 영상 없이 할 수 있는 것 완료(`#FAKE` 배선 시험, 단위시험, CI).
+- 13:40: 모델 `ei1155430-d1`(EI `aisle-guard-v2` 1155430, FOMO 0.35 int8, 검증 F1 0.85)을 펌웨어에 넣고 보드에서 추론 140~172ms. CI 3개(unit-test, firmware-build, model-gate) 초록. 보드 실측: 시연 영상 PASS(지연 10.2·10.6초, 방치 +1.0초, 오경보 0), PRD 시나리오 1·3·4·5 통과, 2는 +1.0초로 경계 통과, 6은 저절로 난 끊김 1회로 누락 0 확인. README 검증 표에 반영.
+- ③ 문서: `db/queries.sql`, `aisle_event_reviews` 표, README, 대시보드 https://claude.ai/artifact/Y96SJDB35Cw7M9EcPwVKvg (DB 스냅숏, 16:00에 다시 받음).
+- 보드에는 모델 펌웨어가 올라가 있다. 창 ②가 `camera.cpp`(작업 중, 미커밋)를 추가하는 중.
 
 ## 남은 일
-- [ ] ① EI: 라벨 확인 → impulse 96×96 RGB + FOMO 0.35 → 학습(F1 확인) → Arduino zip → `build.ps1 -InstallLib`
-- [ ] ① 모델 빌드: `settings.h` `DETECTOR_EI 1`, `MODEL_VERSION`. CI용으로 EI 라이브러리를 `firmware/libraries/`에 커밋(Public 프로젝트 산출물)
-- [ ] ② 보드에서 `#AISLE ...`로 통로 다각형 설정, 추론 시간 확인(목표 500ms 이하)
-- [ ] ② 모델로 `feed.py` → `verify.py`, PRD 시나리오 1~6 실측 → HISTORY
+- [ ] ② 시연 녹화(`feed.py --show` + 보드 LED 촬영, 사용자)
 - [ ] ③ 15:30 security-review, code-review(low)
-- [ ] ③ 16:00 실측 결과를 README 검증 표·PRD 결과 칸·대시보드(DB 다시 받기)에 반영
-- [ ] 시연 영상 촬영, 제출 (16:30, 사용자)
+- [ ] ③ 16:00 대시보드 DB 다시 받기, 제출물 점검(저장소 링크, CI 초록, 시연 영상)
+- [ ] 제출 (16:30, 사용자)
 - [ ] Supabase 시험 행 `device_id='setup-test'`(id 1) 지우기 — 자동 삭제가 확인 창에서 취소됨. 조회·대시보드는 이 행을 뺀다
-- [ ] 제출 후: 보드에 PPE 펌웨어 다시 올리기
+- [ ] 제출 후: EI 옛 프로젝트 `aisle-guard`(1155404) 지우기(선택), 보드에 PPE 펌웨어 다시 올리기
 
 ## 교훈
+- EI가 계산한 tensor arena(185,036B)로는 ESP32-S3 esp-nn에서 `AllocateTensors()`가 실패한다 → `tflite-model/tflite_learn_*_arena_size`를 320000으로. **모델을 다시 내보내면 덮어써지므로 다시 고친다.** PC LiteRT(model-gate·시뮬레이터)로는 못 잡고 보드 실기에서만 보인다.
 - 시리얼에 바이너리 프레임과 텍스트 명령을 섞으면 명령 줄 버퍼에 프레임 찌꺼기가 붙는다 → 프레임 완성 때 줄 버퍼를 비우고, PC는 명령 앞에 `
 `을 붙인다.
 - pyserial로 포트를 열 때 DTR/RTS를 내리지 않으면 ESP32-S3가 리셋된다 → `feed.py`는 `dtr=False, rts=False` 후 open, `#AISLE?` 응답을 기다린 뒤 보낸다.
