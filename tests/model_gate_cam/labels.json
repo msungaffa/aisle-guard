@@ -1,0 +1,500 @@
+{
+ "cam_demo6_001930.png": [],
+ "cam_demo6_004421.png": [],
+ "cam_demo6_006922.png": [
+  {
+   "label": "person",
+   "x": 0,
+   "y": 0,
+   "w": 28,
+   "h": 40
+  }
+ ],
+ "cam_demo6_010426.png": [
+  {
+   "label": "obstacle",
+   "x": 35,
+   "y": 57,
+   "w": 43,
+   "h": 38
+  },
+  {
+   "label": "person",
+   "x": 33,
+   "y": 26,
+   "w": 33,
+   "h": 36
+  }
+ ],
+ "cam_demo6_013435.png": [
+  {
+   "label": "obstacle",
+   "x": 34,
+   "y": 59,
+   "w": 38,
+   "h": 37
+  },
+  {
+   "label": "person",
+   "x": 0,
+   "y": 10,
+   "w": 17,
+   "h": 86
+  }
+ ],
+ "cam_demo6_015923.png": [
+  {
+   "label": "obstacle",
+   "x": 37,
+   "y": 61,
+   "w": 37,
+   "h": 34
+  }
+ ],
+ "cam_demo6_018423.png": [
+  {
+   "label": "obstacle",
+   "x": 37,
+   "y": 60,
+   "w": 37,
+   "h": 35
+  }
+ ],
+ "cam_demo6_020920.png": [
+  {
+   "label": "obstacle",
+   "x": 37,
+   "y": 60,
+   "w": 39,
+   "h": 35
+  }
+ ],
+ "cam_demo6_023922.png": [
+  {
+   "label": "obstacle",
+   "x": 37,
+   "y": 60,
+   "w": 38,
+   "h": 35
+  }
+ ],
+ "cam_demo6_026422.png": [
+  {
+   "label": "obstacle",
+   "x": 38,
+   "y": 60,
+   "w": 39,
+   "h": 36
+  }
+ ],
+ "cam_demo6_028929.png": [
+  {
+   "label": "obstacle",
+   "x": 36,
+   "y": 58,
+   "w": 38,
+   "h": 37
+  },
+  {
+   "label": "person",
+   "x": 0,
+   "y": 24,
+   "w": 22,
+   "h": 71
+  }
+ ],
+ "cam_demo6_031424.png": [
+  {
+   "label": "obstacle",
+   "x": 39,
+   "y": 58,
+   "w": 38,
+   "h": 38
+  },
+  {
+   "label": "person",
+   "x": 0,
+   "y": 0,
+   "w": 19,
+   "h": 31
+  },
+  {
+   "label": "person",
+   "x": 80,
+   "y": 7,
+   "w": 14,
+   "h": 25
+  },
+  {
+   "label": "person",
+   "x": 0,
+   "y": 0,
+   "w": 9,
+   "h": 5
+  },
+  {
+   "label": "person",
+   "x": 25,
+   "y": 0,
+   "w": 26,
+   "h": 80
+  }
+ ],
+ "cam_demo6_033920.png": [
+  {
+   "label": "obstacle",
+   "x": 41,
+   "y": 59,
+   "w": 31,
+   "h": 37
+  },
+  {
+   "label": "person",
+   "x": 33,
+   "y": 0,
+   "w": 13,
+   "h": 29
+  }
+ ],
+ "cam_demo6_036420.png": [
+  {
+   "label": "obstacle",
+   "x": 38,
+   "y": 62,
+   "w": 38,
+   "h": 31
+  },
+  {
+   "label": "person",
+   "x": 0,
+   "y": 6,
+   "w": 16,
+   "h": 24
+  }
+ ],
+ "cam_demo6_038952.png": [
+  {
+   "label": "obstacle",
+   "x": 39,
+   "y": 60,
+   "w": 36,
+   "h": 36
+  },
+  {
+   "label": "person",
+   "x": 46,
+   "y": 10,
+   "w": 14,
+   "h": 39
+  }
+ ],
+ "cam_demo6_041912.png": [
+  {
+   "label": "obstacle",
+   "x": 38,
+   "y": 57,
+   "w": 40,
+   "h": 38
+  },
+  {
+   "label": "person",
+   "x": 37,
+   "y": 8,
+   "w": 34,
+   "h": 44
+  }
+ ],
+ "cam_demo6_045431.png": [],
+ "cam_demo6_047917.png": [],
+ "cam_demo6_050422.png": [],
+ "cam_demo6_057922.png": [
+  {
+   "label": "person",
+   "x": 21,
+   "y": 11,
+   "w": 43,
+   "h": 85
+  }
+ ],
+ "cam_demo6_060416.png": [],
+ "cam_demo6_062919.png": [
+  {
+   "label": "person",
+   "x": 46,
+   "y": 11,
+   "w": 17,
+   "h": 14
+  }
+ ],
+ "cam_demo6_067419.png": [
+  {
+   "label": "obstacle",
+   "x": 32,
+   "y": 64,
+   "w": 28,
+   "h": 32
+  },
+  {
+   "label": "person",
+   "x": 0,
+   "y": 1,
+   "w": 47,
+   "h": 95
+  }
+ ],
+ "cam_demo6_069917.png": [
+  {
+   "label": "obstacle",
+   "x": 30,
+   "y": 68,
+   "w": 34,
+   "h": 24
+  }
+ ],
+ "cam_demo6_072919.png": [
+  {
+   "label": "obstacle",
+   "x": 31,
+   "y": 68,
+   "w": 34,
+   "h": 25
+  }
+ ],
+ "cam_demo6_075425.png": [
+  {
+   "label": "obstacle",
+   "x": 30,
+   "y": 68,
+   "w": 33,
+   "h": 25
+  }
+ ],
+ "cam_demo7_000885.png": [],
+ "cam_demo7_003381.png": [],
+ "cam_demo7_005882.png": [],
+ "cam_demo7_008366.png": [
+  {
+   "label": "person",
+   "x": 30,
+   "y": 18,
+   "w": 18,
+   "h": 14
+  }
+ ],
+ "cam_demo7_014886.png": [
+  {
+   "label": "obstacle",
+   "x": 34,
+   "y": 60,
+   "w": 39,
+   "h": 36
+  }
+ ],
+ "cam_demo7_017383.png": [
+  {
+   "label": "obstacle",
+   "x": 34,
+   "y": 59,
+   "w": 39,
+   "h": 36
+  }
+ ],
+ "cam_demo7_019881.png": [
+  {
+   "label": "obstacle",
+   "x": 34,
+   "y": 60,
+   "w": 40,
+   "h": 36
+  }
+ ],
+ "cam_demo7_022381.png": [
+  {
+   "label": "obstacle",
+   "x": 34,
+   "y": 59,
+   "w": 39,
+   "h": 36
+  }
+ ],
+ "cam_demo7_024885.png": [
+  {
+   "label": "obstacle",
+   "x": 34,
+   "y": 59,
+   "w": 40,
+   "h": 36
+  }
+ ],
+ "cam_demo7_027376.png": [
+  {
+   "label": "obstacle",
+   "x": 34,
+   "y": 60,
+   "w": 39,
+   "h": 36
+  }
+ ],
+ "cam_demo7_029877.png": [
+  {
+   "label": "obstacle",
+   "x": 32,
+   "y": 59,
+   "w": 56,
+   "h": 37
+  },
+  {
+   "label": "person",
+   "x": 0,
+   "y": 20,
+   "w": 33,
+   "h": 76
+  }
+ ],
+ "cam_demo7_032376.png": [
+  {
+   "label": "obstacle",
+   "x": 29,
+   "y": 59,
+   "w": 54,
+   "h": 36
+  },
+  {
+   "label": "person",
+   "x": 0,
+   "y": 13,
+   "w": 27,
+   "h": 23
+  },
+  {
+   "label": "person",
+   "x": 60,
+   "y": 29,
+   "w": 13,
+   "h": 15
+  },
+  {
+   "label": "person",
+   "x": 1,
+   "y": 11,
+   "w": 17,
+   "h": 9
+  },
+  {
+   "label": "person",
+   "x": 30,
+   "y": 20,
+   "w": 17,
+   "h": 34
+  }
+ ],
+ "cam_demo7_034885.png": [
+  {
+   "label": "obstacle",
+   "x": 35,
+   "y": 60,
+   "w": 41,
+   "h": 35
+  },
+  {
+   "label": "person",
+   "x": 16,
+   "y": 2,
+   "w": 19,
+   "h": 25
+  }
+ ],
+ "cam_demo7_037381.png": [
+  {
+   "label": "obstacle",
+   "x": 34,
+   "y": 59,
+   "w": 40,
+   "h": 36
+  }
+ ],
+ "cam_demo7_043880.png": [],
+ "cam_demo7_046386.png": [],
+ "cam_demo7_049380.png": [],
+ "cam_demo7_051883.png": [],
+ "cam_demo7_059374.png": [],
+ "cam_demo7_061876.png": [
+  {
+   "label": "person",
+   "x": 51,
+   "y": 14,
+   "w": 14,
+   "h": 10
+  }
+ ],
+ "cam_demo7_066383.png": [
+  {
+   "label": "obstacle",
+   "x": 28,
+   "y": 55,
+   "w": 63,
+   "h": 41
+  },
+  {
+   "label": "person",
+   "x": 34,
+   "y": 21,
+   "w": 30,
+   "h": 41
+  }
+ ],
+ "cam_demo7_069373.png": [
+  {
+   "label": "obstacle",
+   "x": 37,
+   "y": 65,
+   "w": 47,
+   "h": 30
+  }
+ ],
+ "cam_demo7_071878.png": [
+  {
+   "label": "obstacle",
+   "x": 37,
+   "y": 65,
+   "w": 45,
+   "h": 31
+  }
+ ],
+ "cam_demo7_074377.png": [
+  {
+   "label": "obstacle",
+   "x": 37,
+   "y": 64,
+   "w": 45,
+   "h": 31
+  }
+ ],
+ "cam_demo7_076882.png": [
+  {
+   "label": "obstacle",
+   "x": 37,
+   "y": 64,
+   "w": 45,
+   "h": 31
+  }
+ ],
+ "cam_demo7_079375.png": [
+  {
+   "label": "obstacle",
+   "x": 37,
+   "y": 64,
+   "w": 44,
+   "h": 32
+  }
+ ],
+ "cam_demo7_081886.png": [
+  {
+   "label": "obstacle",
+   "x": 37,
+   "y": 63,
+   "w": 44,
+   "h": 32
+  }
+ ]
+}

@@ -1,4 +1,4 @@
-"""tools/frames/{training,testing}/*.jpg 를 Edge Impulse 프로젝트에 올린다.
+"""tools/frames/{training,testing}/*.jpg·png 를 Edge Impulse 프로젝트에 올린다.
 --labels면 autolabel.py가 만든 박스를 같이 올리고, 아니면 라벨 없이 올려 Studio에서 단다
 (obstacle = 통로 바닥의 상자·가방, person).
 
@@ -36,7 +36,8 @@ def upload(key, cat, files, batch=20, labels=None):
     ok = fail = 0
     for i in range(0, len(files), batch):
         chunk = files[i:i + batch]
-        handles = [("data", (os.path.basename(f), open(f, "rb"), "image/jpeg")) for f in chunk]
+        handles = [("data", (os.path.basename(f), open(f, "rb"), "image/png" if f.endswith(".png") else "image/jpeg"))
+                   for f in chunk]
         if labels:
             # 같은 요청에 bounding_boxes.labels를 넣으면 EI가 파일 이름으로 박스를 붙인다
             sub = {os.path.basename(f): labels.get(os.path.basename(f), []) for f in chunk}
@@ -73,7 +74,7 @@ def main():
     if not key and not args.dry_run:
         sys.exit("EI_API_KEY 없음 (.env)")
     for cat in ("training", "testing"):
-        files = sorted(glob.glob(os.path.join(args.folder, cat, "*.jpg")))
+        files = sorted(glob.glob(os.path.join(args.folder, cat, "*.jpg")) + glob.glob(os.path.join(args.folder, cat, "*.png")))
         labels = None
         if args.labels:
             lp = os.path.join(args.folder, cat, "bounding_boxes.labels")

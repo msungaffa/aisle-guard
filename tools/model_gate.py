@@ -5,6 +5,7 @@ firmware/libraries/*_inferencing의 헤더에서 꺼내 PC(LiteRT)로 돌리고,
 - obstacle 박스 하나는 FOMO 칸(8px) 중 박스 안 칸의 obstacle 점수가 --thr(0.5) 이상이면 찾은 것
 - 오검출: obstacle 라벨이 없는 프레임에서 통로 다각형 안에 obstacle 칸이 나오면 1
 - 재현율이 --min-recall(0.9) 미만이면 종료 코드 1
+- --testset tests/model_gate_cam: 카메라 모드 보드 화면(screen.py 6·7회차, tools/cam_label.py 라벨) 53장
 
 사용: python tools/model_gate.py                 # 검사
       python tools/model_gate.py --make-testset  # tools/frames/testing 라벨로 시험 세트 만들기 (videos/ 필요)
@@ -82,7 +83,9 @@ def main():
     ap.add_argument("--make-testset", action="store_true")
     ap.add_argument("--thr", type=float, default=0.5)
     ap.add_argument("--min-recall", type=float, default=0.9)
+    ap.add_argument("--testset", default=TESTSET, help="tests/model_gate(USB 프레임) 또는 tests/model_gate_cam(보드 카메라 화면)")
     args = ap.parse_args()
+    testset = os.path.join(ROOT, args.testset) if not os.path.isabs(args.testset) else args.testset
     if args.make_testset:
         make_testset()
         return
@@ -102,13 +105,13 @@ def main():
     out_scale, out_zero = outp["quantization"]
     aisle = json.load(open(os.path.join(ROOT, "tools", "aisle.json"), encoding="utf-8"))["aisle_96"]
     poly = list(zip(aisle[0::2], aisle[1::2]))
-    labels = json.load(open(os.path.join(TESTSET, "labels.json"), encoding="utf-8"))
+    labels = json.load(open(os.path.join(testset, "labels.json"), encoding="utf-8"))
     obs_ch = 1 + cats.index("obstacle")  # 0번 채널은 background
 
     found = total = false_frames = empty_frames = 0
     misses = []
     for png, boxes in sorted(labels.items()):
-        img = np.asarray(Image.open(os.path.join(TESTSET, png)).convert("RGB"), dtype=np.float32) / 255.0
+        img = np.asarray(Image.open(os.path.join(testset, png)).convert("RGB"), dtype=np.float32) / 255.0
         q = np.round(img / in_scale + in_zero).clip(-128, 127).astype(inp["dtype"])
         it.set_tensor(inp["index"], q[None])
         it.invoke()
@@ -129,7 +132,7 @@ def main():
             if any(in_poly(poly, x, y) for x, y in hot):
                 false_frames += 1
     recall = found / total if total else 1.0
-    print(f"model {name}, labels {cats}, thr {args.thr}")
+    print(f"model {name}, labels {cats}, thr {args.thr}, testset {os.path.basename(testset)}")
     print(f"obstacle recall {found}/{total} = {recall:.3f} (gate {args.min_recall})")
     print(f"frames without obstacle that fire in aisle: {false_frames}/{empty_frames}")
     if misses:
