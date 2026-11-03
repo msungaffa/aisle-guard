@@ -6,6 +6,8 @@
 bool camera_begin();
 // 자동 노출 목표 (-2 어둡게 ~ 2 밝게)
 void camera_set_ae(int level);
+// 좌우·상하 반전 (손에 든 방향에 맞춘다)
+void camera_set_mirror(bool h, bool v);
 // 잘라낼 정사각형 (QVGA 320×240 좌표). 기본은 가운데 240×240
 void camera_set_crop(int x, int y, int side);
 void camera_get_crop(int *x, int *y, int *side);

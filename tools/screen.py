@@ -43,8 +43,8 @@ def compose(frame, size, video_s, playing):
     cv2.putText(panel, f"obstacle={st['obs']} person={st['per']}", (12, 104), cv2.FONT_HERSHEY_SIMPLEX, 0.55,
                 (230, 230, 230), 1)
     cv2.putText(panel, f"inference {st['inf']}ms", (12, 128), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (230, 230, 230), 1)
-    cv2.putText(panel, f"exposure {st.get('ae', -1):+d}  (- / = keys)", (12, 176), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
-                (180, 180, 180), 1)
+    cv2.putText(panel, f"exposure {st.get('ae', -1):+d} (-/=)  mirror {st.get('mh', 0)}{st.get('mv', 0)} (m/f)",
+                (12, 176), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (180, 180, 180), 1)
     cv2.putText(panel, f"video {video_s:5.1f}s" if playing else "aim camera, SPACE to start", (12, 152),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 200, 255) if not playing else (230, 230, 230), 1)
     if st["event"] and time.time() - st["event_t"] < 4:
@@ -71,6 +71,7 @@ def main():
     ap.add_argument("--conf", type=float, default=0.4,
                     help="카메라 모드 판정 점수 기준 (화면 재촬영이라 점수가 낮게 흔들림, 끝나면 0.6으로 되돌림)")
     ap.add_argument("--ae", type=int, default=-1, help="카메라 자동 노출 목표 -2~2 (창에서 - / = 로 바꿈)")
+    ap.add_argument("--mirror", default="0 0", help='카메라 좌우·상하 반전 "h v" (창에서 m / f 로 바꿈)')
     ap.add_argument("--aim-at", type=float, default=20.0, help="조준할 때 멈춰 보여 줄 영상 시각(초, 상자가 있는 장면)")
     ap.add_argument("--no-view", action="store_true", help="보드 화면을 받지 않는다 (시리얼 부하 줄이기)")
     ap.add_argument("--log", default=None)
@@ -123,6 +124,8 @@ def main():
     if args.camcrop:
         cmd("#CAMCROP " + args.camcrop)
     feed.status["ae"] = args.ae
+    feed.status["mh"], feed.status["mv"] = (int(x) for x in args.mirror.split())
+    cmd(f"#CAMMIRROR {feed.status['mh']} {feed.status['mv']}")
     cmd(f"#CAMAE {args.ae}")
     cmd("#VIEW off" if args.no_view else "#VIEW on")
     cmd("#CAM on")  # 조준하는 동안에도 보드 화면이 보이게 켠다
@@ -139,6 +142,13 @@ def main():
         viewer.draw(cv2.cvtColor(compose(aim, args.size, 0, False), cv2.COLOR_BGR2RGB))
         viewer.root.bind("-", lambda e: set_ae(-1))
         viewer.root.bind("=", lambda e: set_ae(1))
+
+        def flip(key):
+            feed.status[key] ^= 1
+            cmd(f"#CAMMIRROR {feed.status['mh']} {feed.status['mv']}")
+
+        viewer.root.bind("m", lambda e: flip("mh"))
+        viewer.root.bind("f", lambda e: flip("mv"))
         while viewer.alive and not viewer.space:
             viewer.draw(cv2.cvtColor(compose(aim, args.size, 0, False), cv2.COLOR_BGR2RGB))
             time.sleep(0.03)

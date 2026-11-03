@@ -44,6 +44,13 @@ bool camera_begin() {
   return true;
 }
 
+void camera_set_mirror(bool h, bool v) {
+  sensor_t *s = esp_camera_sensor_get();
+  if (!s) return;
+  s->set_hmirror(s, h);
+  s->set_vflip(s, v);
+}
+
 void camera_set_ae(int level) {
   sensor_t *s = esp_camera_sensor_get();
   if (s) s->set_ae_level(s, constrain(level, -2, 2));
