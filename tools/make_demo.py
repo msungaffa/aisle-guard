@@ -6,7 +6,7 @@ demo.json 예:
   "segments": [
     {"image": "ref.png", "sec": 5},               # 정지 화면 5초
     {"clip": "C1.mp4"},                           # 클립 전체
-    {"hold_last": "C1.mp4", "sec": 12},           # C1 마지막 화면을 12초 정지
+    {"hold_last": "C1.mp4", "sec": 12},           # C1 마지막 화면을 12초 정지 (hold_first는 첫 화면)
     {"clip": "C2.mp4"}, ...
   ],
   "truth": [
@@ -68,6 +68,8 @@ def main():
         else:
             if "image" in seg:
                 img = read_image(seg["image"])
+            elif "hold_first" in seg:
+                img = cache.setdefault(seg["hold_first"], read_clip(seg["hold_first"]))[1][0]
             else:
                 img = cache.setdefault(seg["hold_last"], read_clip(seg["hold_last"]))[1][-1]
             out_frames += [img] * int(round(seg["sec"] * out_fps))

@@ -30,3 +30,8 @@
 - 보드 배선 시험(`#FAKE 48 48 0.9`, 회색 프레임 2fps): 첫 실행 경고 10.0초·DB 201, 해제 명령이 안 먹음(프레임 찌꺼기 + 명령) → 수정. 두 번째 실행에서 포트 열 때 보드 리셋 → DTR/RTS 끔. 최종: 경고 v=10.0초, `#FAKE off` 15.0초 → 해제 v=17.0초, dwell 14.5초(−0.5초), 업로드 1.5~1.8초, DB 행 확인.
 - 도구: extract_frames(한글 경로 imwrite 실패 → imencode), ei_upload(dry-run 확인, 실제 업로드는 영상 후), make_demo, verify(합성 로그로 자체 시험 PASS).
 - CI: unit-test(g++ -Werror), firmware-build(arduino-cli + esp32 3.3.12, 코어 캐시, secrets.example.h 복사, `firmware/libraries` 있으면 사용).
+
+## 2026-11-03 ② 시연·검증 (11:35)
+- 클립(모두 10초·24fps·1280×720)을 crop 기준 0.125초 간격으로 봄. C1 상자 바닥 닿음 5.3초, C3 상자 들림 5.3초(든 채 7.4초까지 crop 안), C4 가방 바닥 5.9초. `videos/empty.jpg`는 사람 있는 CAM 14 사진, `ref.jpg`는 빈 통로지만 1376×768이라 안 씀 → `make_demo.py`에 `hold_first` 추가, 빈 통로는 C1·C5 첫 화면 정지.
+- `tools/demo.json` → `videos/demo.mp4` 82.0초. 정답: 상자 둠 10.3초, 치움 42.3초(32초 방치), 가방 둠 65.9초(끝까지 16.1초).
+- 스텁 + `#FAKE`를 정답 시각에 켜고 끈 리허설(`feed.py`, 2fps, `#AISLE 36 0 58 0 94 96 0 96`): 경고 v=21.0초(지연 10.7초), 해제 v=44.5초 dwell 31.5초(오차 −0.5초), 가방 경고 v=76.0초(지연 10.1초), 오경보 0, DB 201 5건, 프레임 손실 0. `verify.py` 둘 다 PASS.

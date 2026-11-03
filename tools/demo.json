@@ -1,0 +1,30 @@
+{
+  "note": "HANDOFF 데이터 흐름의 시연 순서. 시각은 C1~C5(10초, 24fps)를 통로 crop 기준 프레임 단위로 보고 정함. placed=물건이 바닥에 닿은 프레임, removed=바닥에서 들린 프레임. person 구간은 crop 안에 발이 보이는 대략의 구간(검증에는 안 씀). C3에서 상자를 든 사람이 7.4초까지 crop 안에 있어 해제가 늦을 수 있다.",
+  "fps": 24,
+  "segments": [
+    {"hold_first": "C1.mp4", "sec": 5},
+    {"clip": "C1.mp4"},
+    {"hold_last": "C1.mp4", "sec": 12},
+    {"clip": "C2.mp4"},
+    {"clip": "C3.mp4"},
+    {"hold_first": "C5.mp4", "sec": 3},
+    {"clip": "C5.mp4"},
+    {"clip": "C4.mp4"},
+    {"hold_last": "C4.mp4", "sec": 12}
+  ],
+  "truth": [
+    {"segment": 1, "at": 2.5, "event": "person_start"},
+    {"segment": 1, "at": 5.3, "event": "placed", "what": "box"},
+    {"segment": 1, "at": 8.0, "event": "person_end"},
+    {"segment": 3, "at": 2.0, "event": "person_start"},
+    {"segment": 3, "at": 8.5, "event": "person_end"},
+    {"segment": 4, "at": 1.0, "event": "person_start"},
+    {"segment": 4, "at": 5.3, "event": "removed", "what": "box"},
+    {"segment": 4, "at": 7.6, "event": "person_end"},
+    {"segment": 6, "at": 1.5, "event": "person_start"},
+    {"segment": 6, "at": 9.8, "event": "person_end"},
+    {"segment": 7, "at": 1.5, "event": "person_start"},
+    {"segment": 7, "at": 5.9, "event": "placed", "what": "bag"},
+    {"segment": 7, "at": 8.5, "event": "person_end"}
+  ]
+}
