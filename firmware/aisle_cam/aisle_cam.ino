@@ -6,7 +6,8 @@
 //   #CAM on | #CAM off              카메라 모드: 보드 카메라로 2fps 촬영해 같은 검출·판정 (v는 #CAM on부터 ms)
 //   #CAMCROP x y side               카메라에서 잘라낼 정사각형 (QVGA 320×240 좌표, 기본 40 0 240)
 //   #CAMAE n                        카메라 자동 노출 목표 -2~2 (화면을 찍을 때 하얗게 날아가면 낮춘다, 기본 -1)
-//   #VIEW on | #VIEW off            카메라 모드에서 보드가 본 96×96을 "V <hex>" 줄로 보낸다 (조준용, tools/screen.py)
+//   #CONF c                         판정 점수 기준 conf_min (저장 안 함, 기본 0.6. 카메라 모드는 screen.py가 0.4로)
+//   #VIEW on | #VIEW off           카메라 모드에서 보드가 본 96×96을 "V <hex>" 줄로 보낸다 (조준용, tools/screen.py)
 #include <Arduino.h>
 #include <Preferences.h>
 #include <esp_heap_caps.h>
@@ -103,6 +104,16 @@ static void handle_command(char *s) {
     if (sscanf(s + 9, "%d %d %d", &x, &y, &side) == 3) camera_set_crop(x, y, side);
     camera_get_crop(&x, &y, &side);
     Serial.printf("[cam] crop=%d,%d,%d\n", x, y, side);
+    return;
+  }
+  if (strncmp(s, "#CONF ", 6) == 0) {  // 판정 점수 기준 (저장 안 함, 부팅하면 0.6)
+    float c = atof(s + 6);
+    if (c > 0 && c < 1) {
+      cfg.conf_min = c;
+      delete logic_;
+      logic_ = new AisleLogic(cfg);
+    }
+    Serial.printf("[cfg] conf_min=%.2f\n", (double)cfg.conf_min);
     return;
   }
   if (strncmp(s, "#CAMAE ", 7) == 0) {

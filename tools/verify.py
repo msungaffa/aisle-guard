@@ -25,6 +25,9 @@ def main():
 
     events = []
     for line in open(args.log, encoding="utf-8"):
+        if ">> play start" in line:  # screen.py: 조준하는 동안 나온 이벤트는 버린다
+            events = []
+            continue
         m = EV.search(line)
         if m:
             events.append({"kind": m[1].lower(), "dwell": float(m[2]), "conf": float(m[3]), "v": int(m[4]) / 1000})

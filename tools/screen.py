@@ -68,6 +68,8 @@ def main():
     ap.add_argument("--size", type=int, default=640, help="영상 칸 한 변 픽셀")
     ap.add_argument("--aisle", default=CAM_AISLE, help="카메라 모드 판정 영역 (96 좌표, 끝나면 aisle.json 값으로 되돌림)")
     ap.add_argument("--camcrop", default=None, help='보드 카메라 자르기 "x y side" (QVGA 좌표)')
+    ap.add_argument("--conf", type=float, default=0.4,
+                    help="카메라 모드 판정 점수 기준 (화면 재촬영이라 점수가 낮게 흔들림, 끝나면 0.6으로 되돌림)")
     ap.add_argument("--ae", type=int, default=-1, help="카메라 자동 노출 목표 -2~2 (창에서 - / = 로 바꿈)")
     ap.add_argument("--aim-at", type=float, default=20.0, help="조준할 때 멈춰 보여 줄 영상 시각(초, 상자가 있는 장면)")
     ap.add_argument("--no-view", action="store_true", help="보드 화면을 받지 않는다 (시리얼 부하 줄이기)")
@@ -115,6 +117,7 @@ def main():
     v = [float(t) for t in args.aisle.split()]
     AISLE_PTS = (np.array(v, dtype=np.float32).reshape(-1, 2) * 3).astype(np.int32)  # 288/96
     cmd("#AISLE " + args.aisle)
+    cmd(f"#CONF {args.conf}")
     if args.camcrop:
         cmd("#CAMCROP " + args.camcrop)
     feed.status["ae"] = args.ae
@@ -163,6 +166,7 @@ def main():
             cmd("#CAM off")
             cmd("#VIEW off")
             aisle = json.load(open(CONFIG, encoding="utf-8")).get("aisle_96")
+            cmd("#CONF 0.6")  # logic.h 기본값 (USB 검증 기준)
             if aisle:  # USB 검증용 원래 영역으로 되돌린다
                 cmd("#AISLE " + " ".join(str(a) for a in aisle))
         except serial.SerialException:
