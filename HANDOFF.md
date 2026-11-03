@@ -28,7 +28,7 @@
 ## 현재 상태
 - 2026-11-03 11:30: 영상 없이 할 수 있는 것 완료(`#FAKE` 배선 시험, 단위시험, CI).
 - 13:40: 모델 `ei1155430-d1`(EI `aisle-guard-v2` 1155430, FOMO 0.35 int8, 검증 F1 0.85)을 펌웨어에 넣고 보드에서 추론 140~172ms. CI 3개(unit-test, firmware-build, model-gate) 초록. 보드 실측: 시연 영상 PASS(지연 10.2·10.6초, 방치 +1.0초, 오경보 0), PRD 시나리오 1·3·4·5 통과, 2는 +1.0초로 경계 통과, 6은 저절로 난 끊김 1회로 누락 0 확인. README 검증 표에 반영.
-- ③ 문서: `db/queries.sql`, `aisle_event_reviews` 표, README, 대시보드 https://claude.ai/artifact/Y96SJDB35Cw7M9EcPwVKvg (DB 스냅숏, 16:00에 다시 받음).
+- ③ 문서: `db/queries.sql`, `aisle_event_reviews` 표, README, 대시보드 https://claude.ai/artifact/Y96SJDB35Cw7M9EcPwVKvg (DB 스냅숏, 16:05에 다시 받음).
 - 14:10~14:50: 카메라 모드(`#CAM on`, `tools/screen.py`) 추가. 시연 = 카메라 모드, 정량 수치 = USB 모드. d1은 카메라 화면 obstacle 재현율 0.44.
 - 15:23: 모델 `ei1155430-d2`(보드 카메라 화면 369장 추가 재학습, 검증 F1 0.87, arena 320000). PC: 카메라 시험 59/59, USB 27/27·오검출 0/18, simulate 방치 +0.0초. 보드 재확인은 ②.
 
@@ -37,7 +37,7 @@
 - [x] ② 최종 시연 녹화(15:41, d2 카메라 모드) verify PASS, 로그 `tools/logs/final_record.log`
 - [x] ③ security-review(취약점 없음), code-review(15:50, 지적은 아래 "제출 후")
 - [x] Supabase 시험 행 `setup-test`(id 1) 삭제(15:45, 사용자)
-- [x] ③ 16:02 대시보드 DB 다시 받음(364행: 경고 52·해제 36·heartbeat 276)
+- [x] ③ 16:05 대시보드 DB 다시 받음(367행: 경고 52·해제 36·heartbeat 279). README 검증 표·PRD 검증 계획 결과 칸에 d2 보드 결과 반영
 - [ ] 제출 전 사용자 확인: **GitHub 저장소가 PRIVATE** → 공개로 바꾸거나 평가자 초대. 마지막 CI 초록 확인, 시연 영상 파일 확인
 - [ ] 제출 (16:30, 사용자)
 - [ ] 제출 후(선택): 코드 리뷰 지적 고치기 — 상세는 `docs/HISTORY.md` "③ 코드 리뷰 (medium, 15:50)". heartbeat가 경고 큐를 밀어냄, `#AISLE`·`#CAM on`·`#CONF` 때 경고 중이면 cleared 누락, NTP 재시도 없음, 재전송 중복 행, 해제 때 시간 창 안 비움, `logic_max_conf`, `model_gate.py --thr`를 0.6으로(①). 고칠 때는 단위시험 먼저.
