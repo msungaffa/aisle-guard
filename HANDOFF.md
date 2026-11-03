@@ -29,10 +29,12 @@
 - 2026-11-03 11:30: 영상 없이 할 수 있는 것 완료(`#FAKE` 배선 시험, 단위시험, CI).
 - 13:40: 모델 `ei1155430-d1`(EI `aisle-guard-v2` 1155430, FOMO 0.35 int8, 검증 F1 0.85)을 펌웨어에 넣고 보드에서 추론 140~172ms. CI 3개(unit-test, firmware-build, model-gate) 초록. 보드 실측: 시연 영상 PASS(지연 10.2·10.6초, 방치 +1.0초, 오경보 0), PRD 시나리오 1·3·4·5 통과, 2는 +1.0초로 경계 통과, 6은 저절로 난 끊김 1회로 누락 0 확인. README 검증 표에 반영.
 - ③ 문서: `db/queries.sql`, `aisle_event_reviews` 표, README, 대시보드 https://claude.ai/artifact/Y96SJDB35Cw7M9EcPwVKvg (DB 스냅숏, 16:00에 다시 받음).
-- 보드에는 모델 펌웨어가 올라가 있다. 창 ②가 `camera.cpp`(작업 중, 미커밋)를 추가하는 중.
+- 14:10~14:50: 카메라 모드(`#CAM on`, `tools/screen.py`) 추가. 시연 = 카메라 모드, 정량 수치 = USB 모드. d1은 카메라 화면 obstacle 재현율 0.44.
+- 15:23: 모델 `ei1155430-d2`(보드 카메라 화면 369장 추가 재학습, 검증 F1 0.87, arena 320000). PC: 카메라 시험 59/59, USB 27/27·오검출 0/18, simulate 방치 +0.0초. 보드 재확인은 ②.
 
 ## 남은 일
-- [ ] ② 시연 녹화(`feed.py --show` + 보드 LED 촬영, 사용자)
+- [ ] ② d2 보드 재확인: USB 시연·시나리오 1 회귀, 카메라 모드 1회(conf_min 0.6 가능?), `inf=` → 결과가 오면 ③이 README 검증 표에 d2 행 추가
+- [ ] ② 시연 녹화(카메라 모드 `screen.py` 또는 `feed.py --show` + 보드 LED 촬영, 사용자)
 - [ ] ③ 15:30 security-review, code-review(low)
 - [ ] ③ 16:00 대시보드 DB 다시 받기, 제출물 점검(저장소 링크, CI 초록, 시연 영상)
 - [ ] 제출 (16:30, 사용자)
