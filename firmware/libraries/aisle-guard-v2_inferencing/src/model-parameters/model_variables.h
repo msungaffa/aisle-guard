@@ -145,7 +145,7 @@ const ei_impulse_t impulse_1155430_1 = {
     .project_name = "aisle-guard-v2",
     .impulse_id = 1,
     .impulse_name = "Impulse #1",
-    .deploy_version = 1,
+    .deploy_version = 2,
 
     .nn_input_frame_size = 27648,
     .raw_sample_count = 9216,

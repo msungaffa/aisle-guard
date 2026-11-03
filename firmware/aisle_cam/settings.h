@@ -14,7 +14,7 @@
 #endif
 #define EI_HEADER <aisle-guard-v2_inferencing.h>
 #ifndef MODEL_VERSION
-#define MODEL_VERSION "ei1155430-d1"
+#define MODEL_VERSION "ei1155430-d2"
 #endif
 #define EI_MIN_SCORE 0.3f   // 모델이 내보내는 최저 점수. 판정은 logic의 CONF_MIN(0.6)으로 다시 거른다
 
