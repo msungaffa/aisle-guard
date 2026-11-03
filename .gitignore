@@ -1,0 +1,8 @@
+# secrets
+firmware/**/secrets.h
+.env
+# data / build
+tools/captures/
+firmware/tests/build/
+*.zip
+__pycache__/
