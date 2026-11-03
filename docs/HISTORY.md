@@ -158,3 +158,8 @@
 - [확인] **①** `model_gate.py:84` 기본 `--thr 0.5`인데 펌웨어 판정은 `conf_min 0.6`. CI 게이트가 보드보다 후하다. `--thr 0.6`으로 맞추는 것을 권함(바꾸면 CI 결과 다시 확인).
 - [확인] **②** `logic.cpp:44` `logic_max_conf`가 `conf_min`·사람 옆 보류를 적용 안 함(앞 절과 같음).
 - Supabase 시험 행 `device_id='setup-test'`(id 1, heartbeat) 사용자 요청으로 삭제(15:45). 남은 행은 모두 `aisle-cam-01`. ③: HANDOFF "남은 일"의 해당 항목 지워 주세요.
+
+## 2026-11-03 ③ 제출 전 점검 (16:05)
+- 대시보드 DB 다시 받음(16:02 KST): `aisle_events`에서 setup-test 뺀 364행(warning 52, cleared 36, heartbeat 276; 모델 none 55·d1 237·d2 72, 마지막 id 366). 새 파일을 아티팩트에 올리고 `events` 데이터셋을 바꿈(fixed).
+- README 검증 절에 d2 보드 재확인·최종 녹화 결과 문단 추가.
+- 점검: GitHub 저장소가 PRIVATE — 제출 링크가 열리려면 공개 전환 또는 평가자 초대 필요(사용자 결정). CI는 16:05 시점 최근 완료 run 초록, 나머지 진행 중.
