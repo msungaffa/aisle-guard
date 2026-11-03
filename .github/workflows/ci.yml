@@ -45,3 +45,15 @@ jobs:
           libs=""
           if [ -d firmware/libraries ]; then libs="--libraries firmware/libraries"; fi
           arduino-cli compile --fqbn "$FQBN" $libs --warnings default firmware/aisle_cam
+
+  model-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install LiteRT
+        run: pip install numpy pillow ai-edge-litert
+      - name: Obstacle recall on held-out frames (firmware's int8 model)
+        run: python tools/model_gate.py --min-recall 0.9
