@@ -138,3 +138,9 @@
 - code-review (low): 지적 없음. 단 diff가 커서 `logic.cpp`·`ci.yml` 위주로만 봄.
 - **①·②(펌웨어 담당)에게, 선택·제출 후 가능:** `logic.cpp`의 `logic_max_conf`는 `conf_min`·사람 옆 보류를 적용하지 않아, DB `max_conf`가 판정에 쓰인 검출보다 높게 기록될 수 있다. 경고 판정에는 영향 없음. 지금 고치면 단위시험·보드 재측정이 필요하니 16:00 전에는 손대지 않는 것을 권함.
 - CI(2dd6b2b, 모델 d2): unit-test, firmware-build, model-gate 모두 success (15:29).
+
+## 2026-11-03 ② 새 모델 d2 보드 확인 + SNTP 크래시 수정 (15:33)
+- d2 업로드(플래시 38%), 추론 157~159ms(d1 141ms).
+- USB 시나리오 1(15초 ×10): 경고 10/10, 지연 9.7~10.2초, **dwell 오차 10회 모두 0.0초**(d1은 +1.0초), 오경보 0.
+- USB 시연 1회차: 상자 경고 직후 **보드 재부팅** → 판정 초기화로 해제 없이 다시 경고(verify FAIL, 오경보 1). 원인(백트레이스 해석): 업로더 태스크 `HTTPClient::POST → hostByName → dns_clear_cache`가 대기 중이던 **SNTP의 DNS 콜백**(sntp_dns_found → sntp_request → udp_new)을 TCPIP 잠금 없이 실행 → lwIP assert `udp_new_ip_type ... Required to lock TCPIP core functionality`. SNTP 재요청과 업로드가 겹칠 때만 나는 경합이라 그동안 안 보였음(모델과 무관).
+- 수정: `net.cpp`가 시각을 맞추면(또는 30초 지나면) `esp_sntp_stop()`, `uploader.cpp`는 그 뒤에만 전송. 단위시험 ALL PASS, 업로드 후 USB 시연 2회차: 상자 지연 10.2초·dwell **+0.0초**, 가방 지연 10.6초, 오경보 0, DB 201 4건 → PASS.

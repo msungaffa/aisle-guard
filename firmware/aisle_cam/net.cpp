@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
+#include <esp_sntp.h>
 #include <time.h>
 
 #include "settings.h"
@@ -9,6 +10,8 @@
 
 static uint32_t last_retry_ms = 0;
 static bool was_connected = false;
+static bool time_done = false;
+static const uint32_t SNTP_GIVE_UP_MS = 30000;
 
 void net_begin() {
   WiFi.mode(WIFI_STA);
@@ -31,6 +34,14 @@ void net_begin() {
 }
 
 void net_loop() {
+  // SNTP는 시각을 한 번 맞추면 멈춘다. 켜 둔 채면 SNTP의 DNS 콜백이 업로더의 hostByName(dns_clear_cache)
+  // 안에서 잠금 없이 불려 lwIP assert(udp_new_ip_type, Required to lock TCPIP core)로 재부팅된다(실기 확인).
+  // 30초 안에 못 맞추면 그냥 멈춘다: 시각 없는 이벤트도 DB의 created_at은 남는다.
+  if (!time_done && (time(nullptr) >= PROTO_MIN_VALID_TIME || millis() > SNTP_GIVE_UP_MS)) {
+    esp_sntp_stop();
+    time_done = true;
+    Serial.printf("[net] sntp stopped, time %s\n", time(nullptr) >= PROTO_MIN_VALID_TIME ? "synced" : "not synced");
+  }
   bool now = WiFi.status() == WL_CONNECTED;
   if (now != was_connected) {
     was_connected = now;
@@ -51,5 +62,7 @@ void net_loop() {
 }
 
 bool net_connected() { return WiFi.status() == WL_CONNECTED; }
+
+bool net_time_done() { return time_done; }
 
 bool net_time_iso(char *out, size_t n) { return proto_iso8601_utc(time(nullptr), out, n); }

@@ -34,7 +34,8 @@ static int post_once(const char *json) {
 static void task(void *) {
   for (;;) {
     bool have = false;
-    if (net_connected()) {
+    // SNTP가 도는 동안 보내면 DNS 콜백 경합으로 lwIP assert가 난다 (net.cpp)
+    if (net_connected() && net_time_done()) {
       xSemaphoreTake(lock, portMAX_DELAY);
       if (!queue.empty()) {
         strncpy(sending, queue.front(), sizeof sending);
