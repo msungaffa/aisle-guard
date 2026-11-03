@@ -1,4 +1,4 @@
-# Host unit tests for firmware/ppe_cam/proto.cpp (g++).
+# Host unit tests for firmware/aisle_cam/{logic,proto}.cpp (g++).
 # Run from repo root:  powershell -File firmware/tests/run_tests.ps1
 # Comments are ASCII on purpose: Windows PowerShell 5.1 misreads BOM-less UTF-8 scripts.
 $ErrorActionPreference = "Stop"
@@ -25,10 +25,17 @@ if ($gxx -match '[^\x00-\x7F]') {
                "-L$drive/$triplet/lib", "-L$drive/lib/gcc/$triplet/$ver", "-L$drive/lib")
 }
 try {
-    & $gxx @extra -std=c++17 -Wall -Wextra -I "$root/firmware/ppe_cam" "$root/firmware/tests/test_proto.cpp" "$root/firmware/ppe_cam/proto.cpp" -o "$out/test_proto.exe"
+    $src = "$root/firmware/aisle_cam"
+    & $gxx @extra -std=c++17 -Wall -Wextra -I $src "$root/firmware/tests/test_logic.cpp" "$src/logic.cpp" -o "$out/test_logic.exe"
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    & $gxx @extra -std=c++17 -Wall -Wextra -I $src "$root/firmware/tests/test_proto.cpp" "$src/proto.cpp" -o "$out/test_proto.exe"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 } finally {
     if ($drive) { subst $drive /D }
 }
-& "$out/test_proto.exe"
-exit $LASTEXITCODE
+$fail = 0
+foreach ($t in "test_logic", "test_proto") {
+    & "$out/$t.exe"
+    if ($LASTEXITCODE -ne 0) { $fail = 1 }
+}
+exit $fail

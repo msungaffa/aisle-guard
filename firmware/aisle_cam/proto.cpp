@@ -1,23 +1,5 @@
 #include "proto.h"
 
-#include <cstdio>
-#include <cstring>
-
-bool proto_valid_device_id(const char *id) {
-  if (!id) return false;
-  size_t len = std::strlen(id);
-  if (len < 3 || len > 32) return false;
-  for (size_t i = 0; i < len; i++) {
-    char c = id[i];
-    if (!((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-')) return false;
-  }
-  return true;
-}
-
-void proto_capture_id(char *out, size_t n, uint32_t boot_rand, uint32_t seq) {
-  std::snprintf(out, n, "%08lx-%06lu", (unsigned long)boot_rand, (unsigned long)seq);
-}
-
 bool proto_iso8601_utc(time_t t, char *out, size_t n) {
   if (t < PROTO_MIN_VALID_TIME) return false;
   struct tm *tm = std::gmtime(&t);  // 단일 스레드에서만 호출
@@ -26,38 +8,52 @@ bool proto_iso8601_utc(time_t t, char *out, size_t n) {
 }
 
 SendAction proto_classify(int http_code) {
-  if (http_code == 200 || http_code == 202) return SendAction::Success;
+  if (http_code >= 200 && http_code <= 299) return SendAction::Success;
   if (http_code < 0) return SendAction::Retry;  // HTTPClient 연결 실패·타임아웃 등
-  if (http_code >= 500 && http_code <= 599) return SendAction::Retry;
-  return SendAction::Fatal;  // 4xx 및 예상 밖 코드: 재시도하지 않음
+  if (http_code == 429 || (http_code >= 500 && http_code <= 599)) return SendAction::Retry;
+  return SendAction::Fatal;  // 4xx(키·RLS·형식 오류) 및 예상 밖 코드: 재시도하지 않음
 }
 
-uint32_t proto_retry_delay_ms(int attempt, long retry_after_s) {
-  if (retry_after_s >= 0) return (uint32_t)(retry_after_s > 4 ? 4 : retry_after_s) * 1000u;
+uint32_t proto_retry_delay_ms(int attempt) {
   if (attempt < 1) attempt = 1;
   if (attempt > 3) attempt = 3;
   return 1000u << (attempt - 1);
 }
 
-bool proto_extract_event_id(const char *body, char *out, size_t n) {
-  if (!body || !out || n == 0) return false;
-  const char *key = std::strstr(body, "\"event_id\"");
-  if (!key) return false;
-  const char *p = std::strchr(key + 10, ':');
-  if (!p) return false;
-  p = std::strchr(p, '"');
-  if (!p) return false;
-  p++;
-  const char *end = std::strchr(p, '"');
-  if (!end) return false;
-  size_t len = (size_t)(end - p);
-  if (len + 1 > n) return false;
-  std::memcpy(out, p, len);
-  out[len] = '\0';
-  return true;
-}
+static const uint8_t MAGIC[4] = {'A', 'G', 'F', 'R'};
 
-bool proto_jpeg_ok(const uint8_t *buf, size_t len) {
-  if (!buf || len < 2 || len > PROTO_MAX_JPEG_BYTES) return false;
-  return buf[0] == 0xFF && buf[1] == 0xD8;
+bool FrameParser::feed(uint8_t b) {
+  switch (st_) {
+    case St::Magic:
+      if (b == MAGIC[magic_i_]) {
+        if (++magic_i_ == 4) { st_ = St::Header; hdr_i_ = 0; magic_i_ = 0; }
+      } else {
+        magic_i_ = (b == MAGIC[0]) ? 1 : 0;
+      }
+      return false;
+    case St::Header:
+      hdr_[hdr_i_++] = b;
+      if (hdr_i_ == 6) {
+        pending_ms_ = (uint32_t)hdr_[0] | ((uint32_t)hdr_[1] << 8) | ((uint32_t)hdr_[2] << 16) |
+                      ((uint32_t)hdr_[3] << 24);
+        len_ = (size_t)hdr_[4] | ((size_t)hdr_[5] << 8);
+        got_ = 0;
+        x_ = 0;
+        // 길이가 다르면 버리고 다시 magic을 찾는다
+        if (len_ != PROTO_FRAME_BYTES || len_ > cap_) { bad_++; st_ = St::Magic; }
+        else st_ = St::Payload;
+      }
+      return false;
+    case St::Payload:
+      buf_[got_++] = b;
+      x_ ^= b;
+      if (got_ == len_) st_ = St::Check;
+      return false;
+    case St::Check:
+      st_ = St::Magic;
+      if (b != x_) { bad_++; return false; }
+      video_ms_ = pending_ms_;
+      return true;
+  }
+  return false;
 }

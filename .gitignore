@@ -7,3 +7,4 @@ firmware/tests/build/
 *.zip
 __pycache__/
 videos/
+tools/logs/
