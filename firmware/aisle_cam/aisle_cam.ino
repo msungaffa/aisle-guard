@@ -5,6 +5,7 @@
 //   #FAKE x y conf | #FAKE off      스텁 검출기에 가짜 obstacle (모델 없이 배선 시험)
 //   #CAM on | #CAM off              카메라 모드: 보드 카메라로 2fps 촬영해 같은 검출·판정 (v는 #CAM on부터 ms)
 //   #CAMCROP x y side               카메라에서 잘라낼 정사각형 (QVGA 320×240 좌표, 기본 40 0 240)
+//   #CAMAE n                        카메라 자동 노출 목표 -2~2 (화면을 찍을 때 하얗게 날아가면 낮춘다, 기본 -1)
 //   #VIEW on | #VIEW off            카메라 모드에서 보드가 본 96×96을 "V <hex>" 줄로 보낸다 (조준용, tools/screen.py)
 #include <Arduino.h>
 #include <Preferences.h>
@@ -102,6 +103,12 @@ static void handle_command(char *s) {
     if (sscanf(s + 9, "%d %d %d", &x, &y, &side) == 3) camera_set_crop(x, y, side);
     camera_get_crop(&x, &y, &side);
     Serial.printf("[cam] crop=%d,%d,%d\n", x, y, side);
+    return;
+  }
+  if (strncmp(s, "#CAMAE ", 7) == 0) {
+    if (!cam_ready) cam_ready = camera_begin();
+    if (cam_ready) camera_set_ae(atoi(s + 7));
+    Serial.printf("[cam] ae=%d\n", atoi(s + 7));
     return;
   }
   if (strcmp(s, "#VIEW on") == 0) { view_on = true; Serial.println("[cam] view on"); return; }

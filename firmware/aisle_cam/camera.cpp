@@ -40,7 +40,13 @@ bool camera_begin() {
     Serial.printf("[cam] init failed 0x%x\n", err);
     return false;
   }
+  camera_set_ae(-1);  // 노트북 화면을 찍으면 가운데가 하얗게 날아가 검출이 0이 됨 → 한 단계 어둡게
   return true;
+}
+
+void camera_set_ae(int level) {
+  sensor_t *s = esp_camera_sensor_get();
+  if (s) s->set_ae_level(s, constrain(level, -2, 2));
 }
 
 void camera_set_crop(int x, int y, int side) {
