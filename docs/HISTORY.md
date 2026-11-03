@@ -157,3 +157,4 @@
 - [후보] **②** `verify.py:37·52·71` 체류를 치운 순서로 처리하고 같은 `what`이면 덮어씀, cleared를 체류 구간으로 제한하지 않음, cleared 없는 체류(dwell err None)도 PASS. 지금 시연·시나리오는 체류가 겹치지 않고 모두 cleared가 있어 결과에는 영향 없음.
 - [확인] **①** `model_gate.py:84` 기본 `--thr 0.5`인데 펌웨어 판정은 `conf_min 0.6`. CI 게이트가 보드보다 후하다. `--thr 0.6`으로 맞추는 것을 권함(바꾸면 CI 결과 다시 확인).
 - [확인] **②** `logic.cpp:44` `logic_max_conf`가 `conf_min`·사람 옆 보류를 적용 안 함(앞 절과 같음).
+- Supabase 시험 행 `device_id='setup-test'`(id 1, heartbeat) 사용자 요청으로 삭제(15:45). 남은 행은 모두 `aisle-cam-01`. ③: HANDOFF "남은 일"의 해당 항목 지워 주세요.
