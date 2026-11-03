@@ -48,3 +48,5 @@
 - EI: 기존 프로젝트(1155404)에 라벨 없이 먼저 올렸는데 키가 ingestion 권한이라 박스를 붙일 수 없음. admin 키 생성은 자동 권한 검사에서 거부, 샘플 삭제는 데이터 영구 삭제라 하지 않음 → 새 Public 프로젝트 `aisle-guard-v2`(1155430)에 박스와 함께 업로드. 옛 프로젝트는 사용자가 나중에 지워도 됨.
 - 학습: 96×96 RGB, FOMO MobileNetV2 0.35, 60 cycles, lr 0.001, augmentation. 검증 F1 0.85(obstacle 0.89, person 0.83), 정밀도 0.93, 재현율 0.78. 시험 세트(float32) 정확도 71%, F1 0.78 — 물건 프레임은 대부분 100%, C5 끝(카메라 바로 앞 큰 사람)은 학습 구간에 없어서 놓침. 사람을 놓치는 건 경고를 만들지 않음.
 - 배포: API로 Arduino int8 tflite 빌드(deploy v1) → `firmware/libraries/aisle-guard-v2_inferencing`(25MB, 1337 파일) 커밋, `build.ps1`도 `--libraries firmware/libraries` 사용(CI와 같게). `DETECTOR_EI 1`, `MODEL_VERSION "ei1155430-d1"`.
+- model-gate(CI): 펌웨어 라이브러리 헤더의 int8 모델 바이트를 꺼내 LiteRT로 실행, `tests/model_gate/`(시험 45장, feed.py와 같은 자르기, 96×96 PNG)에서 obstacle 재현율 27/27(1.00), obstacle 없는 프레임 중 통로 안 오검출 1/18. 기준 0.9 미만이면 CI 실패.
+- ②에게: 모델 커밋 `deb8980`. pull → `build.ps1 -Port COM10` → `#AISLE 36 0 58 0 94 96 0 96`. 추론 시간은 보드 `F ... inf=`로 확인.
