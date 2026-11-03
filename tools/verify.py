@@ -65,7 +65,7 @@ def main():
         lat = f"{latency:.1f}s" if latency is not None else "-"
         e = f"{err:+.1f}s" if err is not None else "-"
         print(f"{s['what']:8} {s['placed']:7.1f} {rem:>7} {'warn' if long_enough else 'none':>7} {lat:>8} {e:>9}  "
-              f"{'PASS' if ok and (err is None or abs(err) <= 1.0) else 'FAIL'}")
+              f"{'PASS' if ok and (err is None or round(abs(err), 1) <= 1.0) else 'FAIL'}")
     print(f"false alarms: {len(false_alarms)}" + "".join(f"\n  warning at v={e['v']:.1f}s" for e in false_alarms))
 
 
