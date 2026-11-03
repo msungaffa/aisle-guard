@@ -50,3 +50,4 @@
 - 배포: API로 Arduino int8 tflite 빌드(deploy v1) → `firmware/libraries/aisle-guard-v2_inferencing`(25MB, 1337 파일) 커밋, `build.ps1`도 `--libraries firmware/libraries` 사용(CI와 같게). `DETECTOR_EI 1`, `MODEL_VERSION "ei1155430-d1"`.
 - model-gate(CI): 펌웨어 라이브러리 헤더의 int8 모델 바이트를 꺼내 LiteRT로 실행, `tests/model_gate/`(시험 45장, feed.py와 같은 자르기, 96×96 PNG)에서 obstacle 재현율 27/27(1.00), obstacle 없는 프레임 중 통로 안 오검출 1/18. 기준 0.9 미만이면 CI 실패.
 - ②에게: 모델 커밋 `deb8980`. pull → `build.ps1 -Port COM10` → `#AISLE 36 0 58 0 94 96 0 96`. 추론 시간은 보드 `F ... inf=`로 확인.
+- PC 시뮬레이션(`tools/simulate.py`: 펌웨어 int8 모델을 LiteRT로 + logic.cpp 규칙을 파이썬으로 옮김, 시간은 영상 시각, 보드 실측 대체 아님): demo.mp4 상자 경고 지연 10.2초·방치 오차 +0.5초, 가방 10.1초, 오경보 0. 시나리오1 10/10 경고(지연 10.2초, 오차 +0.5초; 마지막 1회는 영상 끝이라 해제 없음), 시나리오3(사람만) 오경보 0, 시나리오4(5초) 경고 0/5, 시나리오5(통로 밖) 오경보 0. 주의: 시나리오 반복은 같은 클립 구간이라 독립 시행이 아님 → 보고서 한계에 적기.
